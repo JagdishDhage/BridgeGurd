@@ -3,183 +3,894 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BridgeGuard – Smart Health Monitoring System</title>
+<title>BridgeGuard – Smart Infrastructure Monitoring</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root{
-  --bg0:#060a14;--bg1:#0b1120;--bg2:#0f1829;--bg3:#152035;
-  --border:#1a2d47;--border2:#243d5e;
-  --text:#c8d8f0;--text2:#7a96b8;--text3:#4a6480;
-  --blue:#3b9eff;--teal:#00d4b8;--green:#3dd68c;
-  --yellow:#f5c842;--orange:#ff7a2f;--red:#ff3f3f;
-  --font-mono:'Share Tech Mono',monospace;
-  --font:'Barlow',sans-serif;
+:root {
+  --bg:        #f5f4f0;
+  --bg1:       #ffffff;
+  --bg2:       #fafaf8;
+  --bg3:       #f0ede8;
+  --bg4:       #e8e4dc;
+  --surface:   #ffffff;
+  --surface2:  #f7f6f2;
+  --border:    #e2ddd6;
+  --border2:   #d4cfc7;
+  --text:      #1a1714;
+  --text2:     #3d3830;
+  --text3:     #7a7268;
+  --text4:     #b0a89e;
+  --blue:      #2563eb;
+  --blue-soft: #dbeafe;
+  --blue-mid:  #93c5fd;
+  --teal:      #0d9488;
+  --teal-soft: #ccfbf1;
+  --green:     #16a34a;
+  --green-soft:#dcfce7;
+  --yellow:    #d97706;
+  --yellow-soft:#fef3c7;
+  --orange:    #ea580c;
+  --orange-soft:#ffedd5;
+  --red:       #dc2626;
+  --red-soft:  #fee2e2;
+  --purple:    #7c3aed;
+  --radius:    10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:    0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06);
+  --font:      'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-serif:'Instrument Serif', serif;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:var(--font);background:var(--bg0);color:var(--text);min-height:100vh;overflow:hidden}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:var(--bg0)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-#app{display:flex;flex-direction:column;height:100vh}
-/* TOPBAR */
-#topbar{background:var(--bg1);border-bottom:1px solid var(--border);padding:0 16px;height:48px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:100}
-#logo{font-family:var(--font-mono);font-size:15px;color:var(--blue);letter-spacing:3px}
-#logo span{color:var(--teal)}
-.tb-sep{width:1px;height:20px;background:var(--border)}
-.tb-badge{font-size:10px;padding:3px 8px;border-radius:2px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-family:var(--font-mono);background:#0d2a1a;color:var(--green);border:1px solid #1a4a2a}
-#sync-time{font-size:11px;color:var(--text3);margin-left:auto;font-family:var(--font-mono)}
-.pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(61,214,140,.4)}50%{opacity:.8;box-shadow:0 0 0 5px rgba(61,214,140,0)}}
-/* NAV */
-#nav{background:var(--bg1);border-bottom:1px solid var(--border);display:flex;flex-shrink:0}
-.nav-tab{padding:10px 18px;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;display:flex;align-items:center;gap:6px;white-space:nowrap}
-.nav-tab:hover{color:var(--text);background:var(--bg2)}
-.nav-tab.active{color:var(--blue);border-bottom-color:var(--blue);background:var(--bg2)}
-.tab-badge{background:var(--red);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;font-family:var(--font-mono)}
-/* STAT BAR */
-#stat-bar{display:flex;background:var(--bg1);border-bottom:1px solid var(--border);flex-shrink:0}
-.stat-cell{flex:1;padding:8px 14px;border-right:1px solid var(--border);display:flex;align-items:center;gap:8px}
-.stat-cell:last-child{border-right:none}
-.stat-num{font-size:20px;font-weight:700;line-height:1;font-family:var(--font-mono)}
-.stat-lbl{font-size:10px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-top:2px}
-.c-blue{color:var(--blue)}.c-green{color:var(--green)}.c-yellow{color:var(--yellow)}.c-red{color:var(--red)}.c-orange{color:var(--orange)}.c-teal{color:var(--teal)}
-/* PAGES */
-.page{display:none;flex:1;overflow:hidden}
-.page.active{display:flex}
-/* DASHBOARD */
-#page-dashboard{flex-direction:row}
-#dash-left{width:300px;background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
-#bl-header{padding:8px 12px;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
-#bridge-search{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:12px;font-family:var(--font)}
-#bridge-list{flex:1;overflow-y:auto}
-.bcard{padding:9px 12px;border-bottom:1px solid #0d1826;cursor:pointer;transition:background .15s;position:relative}
-.bcard:hover{background:var(--bg2)}
-.bcard.sel{background:var(--bg3);border-left:3px solid var(--blue)}
-.bcard.crit-flash{animation:critflash 1.5s infinite}
-@keyframes critflash{0%,100%{background:var(--bg2)}50%{background:#200a0a}}
-.bc-r1{display:flex;align-items:center;gap:6px;margin-bottom:3px}
-.bc-name{font-size:13px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.badge{font-size:9px;padding:2px 6px;border-radius:2px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-family:var(--font-mono)}
-.b-safe{background:#0d2a1a;color:var(--green)}.b-warning{background:#2a200a;color:var(--yellow)}.b-critical{background:#2a0a0a;color:var(--red)}
-.bc-r2{display:flex;gap:8px;font-size:10px;color:var(--text3)}
-.sbar{height:3px;background:var(--border);border-radius:2px;margin-top:4px;overflow:hidden}
-.sbar-fill{height:3px;border-radius:2px;transition:width .6s}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle noise texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.4;
+}
+
+#app { display: flex; flex-direction: column; height: 100vh; position: relative; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text4); }
+
+/* ── TOPBAR ── */
+#topbar {
+  height: 54px;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 14px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 100;
+}
+
+.logo {
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.logo-icon {
+  width: 30px; height: 30px;
+  background: linear-gradient(145deg, #1d4ed8, #2563eb);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+}
+
+.logo-guard { color: var(--blue); }
+
+.tb-sep { width: 1px; height: 20px; background: var(--border); }
+
+.system-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--green-soft);
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  padding: 4px 10px 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.live-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.4); }
+  50% { box-shadow: 0 0 0 5px rgba(22,163,74,0); }
+}
+
+.tb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+#sync-time {
+  font-size: 10px;
+  color: var(--text4);
+  font-family: var(--font-mono);
+}
+
+/* ── NAV ── */
+#nav {
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  padding: 0 20px;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.nav-tab {
+  padding: 11px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  position: relative;
+  border-radius: 0;
+  user-select: none;
+}
+
+.nav-tab:hover { color: var(--text2); background: var(--bg3); }
+.nav-tab.active { color: var(--blue); border-bottom-color: var(--blue); background: transparent; }
+
+.nav-icon { font-size: 14px; }
+
+.tab-badge {
+  background: var(--red);
+  color: #fff;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  min-width: 17px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ── STAT BAR ── */
+#stat-bar {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  box-shadow: inset 0 -1px 0 var(--border);
+}
+
+.stat-cell {
+  flex: 1;
+  padding: 11px 18px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  cursor: default;
+  transition: background 0.15s;
+}
+.stat-cell:last-child { border-right: none; }
+.stat-cell:hover { background: var(--bg3); }
+
+.stat-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-num {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  font-family: var(--font-mono);
+  letter-spacing: -1px;
+}
+.stat-lbl {
+  font-size: 9px;
+  color: var(--text4);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+.c-blue   { color: var(--blue); }
+.c-green  { color: var(--green); }
+.c-yellow { color: var(--yellow); }
+.c-red    { color: var(--red); }
+.c-orange { color: var(--orange); }
+.c-teal   { color: var(--teal); }
+
+/* ── PAGES ── */
+.page { display: none; flex: 1; overflow: hidden; }
+.page.active { display: flex; }
+
+/* ── DASHBOARD ── */
+#page-dashboard { flex-direction: row; }
+
+#dash-left {
+  width: 295px;
+  background: var(--bg1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg2);
+}
+
+.search-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  transition: all 0.18s;
+  box-shadow: var(--shadow-sm);
+}
+.search-wrap:focus-within {
+  border-color: var(--blue-mid);
+  box-shadow: 0 0 0 3px var(--blue-soft);
+}
+.search-wrap span { color: var(--text4); font-size: 12px; }
+
+#bridge-search {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 12px;
+  font-family: var(--font);
+}
+#bridge-search::placeholder { color: var(--text4); }
+
+.bl-count-badge {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 2px 7px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+#bridge-list { flex: 1; overflow-y: auto; padding: 8px; }
+
+/* Bridge Card */
+.bcard {
+  padding: 10px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  margin-bottom: 3px;
+  border: 1px solid transparent;
+  background: transparent;
+}
+
+.bcard:hover { background: var(--bg2); border-color: var(--border); }
+.bcard.sel { background: var(--blue-soft); border-color: #bfdbfe; }
+
+.bcard.sel::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 3px;
+  background: var(--blue);
+  border-radius: 0 3px 3px 0;
+}
+
+.bcard.crit-flash { animation: critFlash 2.5s infinite; }
+@keyframes critFlash {
+  0%,100% { border-color: #fecaca; background: #fff5f5; }
+  50% { border-color: #fca5a5; background: #fee2e2; }
+}
+
+.bc-r1 { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.bc-name { font-size: 12px; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.bc-r2 { display: flex; gap: 5px; font-size: 10px; color: var(--text4); align-items: center; margin-bottom: 7px; }
+.bc-score { margin-left: auto; font-weight: 700; font-family: var(--font-mono); font-size: 11px; }
+
+.sbar { height: 3px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.sbar-fill { height: 3px; border-radius: 3px; transition: width 0.5s ease; }
+
+/* Badges */
+.badge {
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.b-safe     { background: var(--green-soft); color: var(--green); border-color: #bbf7d0; }
+.b-warning  { background: var(--yellow-soft); color: var(--yellow); border-color: #fde68a; }
+.b-critical { background: var(--red-soft); color: var(--red); border-color: #fecaca; }
+
 /* MAP */
-#map-wrap{flex:1;position:relative}
-#map{width:100%;height:100%}
-/* DETAIL */
-#detail{width:280px;background:var(--bg1);border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0}
-#det-empty{padding:30px 14px;text-align:center;color:var(--text3);font-size:12px;line-height:2.2}
-#det-body{padding:12px;display:none}
-.det-name{font-size:15px;font-weight:700;margin-bottom:2px}
-.det-sub{font-size:11px;color:var(--text3);margin-bottom:10px}
-.score-wrap{display:flex;align-items:center;gap:10px;background:var(--bg0);border-radius:5px;padding:10px;margin-bottom:10px}
-.score-big{font-size:36px;font-weight:700;line-height:1;font-family:var(--font-mono)}
-.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px}
-.sbox{background:var(--bg0);border-radius:4px;padding:7px;border:1px solid var(--border)}
-.sbox-name{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
-.sbox-val{font-size:13px;font-weight:700;font-family:var(--font-mono);margin:2px 0}
-.sbox-st{font-size:9px}
-.divider{height:1px;background:var(--border);margin:8px 0}
-.btn{width:100%;padding:9px;border:none;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .15s;font-family:var(--font);display:block}
-.btn+.btn{margin-top:5px}
-.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#cc2a2a}
-.btn-red:disabled{background:#2a1010;color:#5a2020;cursor:not-allowed}
-.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#2a8aee}
-.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border2)}.btn-outline:hover{background:var(--bg2)}
-.btn-orange{background:var(--orange);color:#fff}.btn-orange:hover{background:#e06520}
-.btn-teal{background:var(--teal);color:#000}.btn-teal:hover{opacity:.9}
-.geo-ok{font-size:10px;color:var(--green);text-align:center;margin-top:5px;font-family:var(--font-mono)}
-.info-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid var(--border)}
-.info-row:last-child{border-bottom:none}
-.info-key{color:var(--text3)}
-.info-val{font-weight:500;font-family:var(--font-mono);font-size:11px}
-.sec-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin:8px 0 6px}
-/* ALERTS PAGE */
-#page-alerts{flex-direction:column;overflow:hidden}
-#alerts-toolbar{padding:8px 14px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
-#alerts-list{flex:1;overflow-y:auto;padding:10px 14px;display:flex;flex-direction:column;gap:6px}
-.alert-card{background:var(--bg1);border:1px solid var(--border);border-radius:5px;padding:11px 13px;display:flex;align-items:flex-start;gap:10px;transition:background .15s}
-.alert-card:hover{background:var(--bg2)}
-.alert-card.resolved{opacity:.5}
-.alert-sev-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.sev-HIGH,.sev-CRITICAL{background:var(--red)}.sev-MEDIUM{background:var(--yellow)}.sev-LOW{background:var(--green)}
-.alert-body{flex:1;min-width:0}
-.alert-title{font-size:13px;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.alert-msg{font-size:11px;color:var(--text2);margin-bottom:5px;line-height:1.5}
-.alert-meta{display:flex;gap:10px;font-size:10px;color:var(--text3);font-family:var(--font-mono);flex-wrap:wrap}
-.alert-acts{display:flex;gap:5px;flex-shrink:0}
-.btn-sm{padding:4px 10px;font-size:10px;border:none;border-radius:3px;cursor:pointer;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.btn-sm-resolve{background:#0d2a1a;color:var(--green)}.btn-sm-resolve:hover{background:#1a4a2a}
-.btn-sm-ack{background:#0a1a2a;color:var(--blue)}.btn-sm-ack:hover{background:#1a2a4a}
-.filter-btn{padding:5px 10px;font-size:10px;border-radius:3px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-weight:700;text-transform:uppercase;letter-spacing:.5px;transition:all .15s}
-.filter-btn.on{background:var(--blue);color:#fff;border-color:var(--blue)}
-.sel-input{background:var(--bg0);border:1px solid var(--border2);color:var(--text);padding:5px 8px;border-radius:3px;font-size:11px;font-family:var(--font)}
-/* ANALYTICS */
-#page-analytics{flex-direction:column;overflow:hidden}
-#analytics-body{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.chart-card{background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:13px}
-.chart-title{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text2);margin-bottom:10px}
-/* SENSORS PAGE */
-#page-sensors{flex-direction:column;overflow:hidden}
-#sensors-body{flex:1;overflow-y:auto;padding:14px}
-#sensors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
-.sensor-card{background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:13px}
-.sc-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.sc-name{font-size:13px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sc-time{font-size:10px;color:var(--text3);font-family:var(--font-mono)}
-.sr{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid var(--border)}
-.sr:last-child{border-bottom:none}
-.sr-name{font-size:10px;color:var(--text3);width:80px;text-transform:uppercase;letter-spacing:.3px}
-.sr-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
-.sr-bar{height:5px;border-radius:3px;transition:width .5s,background .5s}
-.sr-val{font-size:11px;font-weight:700;font-family:var(--font-mono);width:48px;text-align:right}
-/* GEOFENCE PAGE */
-#page-geofence{flex-direction:column;overflow:hidden}
-#geo-map-wrap{flex:1;position:relative}
-#geo-map{width:100%;height:100%}
-#geo-panel{position:absolute;top:10px;right:10px;width:270px;background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:12px;z-index:400;max-height:calc(100% - 20px);overflow-y:auto}
-.geo-item{background:var(--bg0);border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:7px}
-.geo-item-name{font-size:13px;font-weight:700;margin-bottom:3px}
-.geo-item-info{font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-bottom:6px;line-height:1.6}
-/* ADD BRIDGE MODAL */
-#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center}
-#modal-overlay.open{display:flex}
-#modal{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;width:460px;max-height:90vh;overflow-y:auto;padding:20px}
-.modal-title{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--blue)}
-.form-row{margin-bottom:9px}
-.form-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;display:block}
-.form-input{width:100%;background:var(--bg0);border:1px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:4px;font-size:13px;font-family:var(--font);outline:none;transition:border .15s}
-.form-input:focus{border-color:var(--blue)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.modal-footer{display:flex;gap:8px;margin-top:12px}
-.modal-footer .btn{flex:1}
-/* MANUAL ALERT MODAL */
-#modal2-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center}
-#modal2-overlay.open{display:flex}
-#modal2{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;width:400px;padding:20px}
-/* SIMULATOR MODAL */
-#modal3-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center}
-#modal3-overlay.open{display:flex}
-#modal3{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;width:480px;padding:20px}
-.rng-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
-.rng-row label{font-size:10px;color:var(--text3);width:90px;text-transform:uppercase;letter-spacing:.3px}
-.rng-row input[type=range]{flex:1;accent-color:var(--blue)}
-.rng-row span{font-size:12px;font-family:var(--font-mono);width:48px;text-align:right;color:var(--text)}
-/* TOAST */
-#toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--blue);color:var(--text);padding:10px 16px;border-radius:4px;font-size:12px;display:none;z-index:9999;max-width:300px;font-family:var(--font-mono)}
-#toast.ok{border-color:var(--green);background:#0a1e12}
-#toast.err{border-color:var(--red);background:#1e0a0a}
-#toast.warn{border-color:var(--yellow);background:#1e180a}
-/* MISC */
-.loading-msg,.empty-msg{text-align:center;padding:24px;color:var(--text3);font-size:12px;font-family:var(--font-mono)}
-.leaflet-popup-content-wrapper{background:var(--bg2)!important;border:1px solid var(--border2)!important;color:var(--text)!important;border-radius:4px!important;box-shadow:none!important}
-.leaflet-popup-tip{background:var(--bg2)!important}
-.lp-name{font-weight:700;font-size:13px;margin-bottom:4px}
-.lp-row{font-size:11px;font-family:var(--font-mono);margin-top:3px}
+#map-wrap { flex: 1; position: relative; }
+#map { width: 100%; height: 100%; }
+
+/* DETAIL PANEL */
+#detail {
+  width: 275px;
+  background: var(--bg1);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  flex-shrink: 0;
+  padding: 16px;
+}
+
+#det-empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text4);
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.7;
+  padding: 20px;
+}
+
+.det-empty-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.det-name { font-size: 15px; font-weight: 800; margin-bottom: 2px; line-height: 1.3; color: var(--text); }
+.det-sub { font-size: 11px; color: var(--text4); margin-bottom: 14px; }
+
+.score-card {
+  background: linear-gradient(135deg, var(--blue-soft), #eff6ff);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.score-ring { width: 64px; height: 64px; position: relative; flex-shrink: 0; }
+.score-ring svg { transform: rotate(-90deg); }
+.score-ring-val {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 800;
+  font-family: var(--font-mono);
+  letter-spacing: -1px;
+}
+
+.score-meta-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; font-weight: 600; }
+.score-meta-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.sec-header {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 14px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.sec-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.info-table {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 11px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  transition: background 0.1s;
+}
+.info-row:last-child { border-bottom: none; }
+.info-row:hover { background: var(--bg3); }
+.info-key { color: var(--text4); font-size: 10px; font-weight: 500; }
+.info-val { font-weight: 700; font-family: var(--font-mono); font-size: 10px; color: var(--text2); }
+
+.sgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+.sbox {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px;
+  transition: all 0.2s;
+}
+.sbox:hover { background: var(--bg3); }
+.sbox-name { font-size: 8px; color: var(--text4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; font-weight: 600; }
+.sbox-val { font-size: 15px; font-weight: 800; font-family: var(--font-mono); line-height: 1.2; }
+.sbox-st { font-size: 8px; font-weight: 700; letter-spacing: 0.4px; margin-top: 2px; text-transform: uppercase; }
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: all 0.15s;
+  font-family: var(--font);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.btn:last-child { margin-bottom: 0; }
+
+.btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: 0 2px 8px rgba(37,99,235,0.25); }
+.btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 14px rgba(37,99,235,0.35); transform: translateY(-1px); }
+.btn-primary:disabled { background: var(--bg3); color: var(--text4); cursor: not-allowed; box-shadow: none; border-color: var(--border); transform: none; }
+
+.btn-danger { background: var(--red-soft); color: var(--red); border-color: #fecaca; }
+.btn-danger:hover { background: #fee2e2; border-color: #fca5a5; }
+
+.btn-warning { background: var(--orange-soft); color: var(--orange); border-color: #fed7aa; }
+.btn-warning:hover { background: #ffedd5; }
+
+.btn-ghost { background: transparent; color: var(--text2); border-color: var(--border); }
+.btn-ghost:hover { background: var(--bg2); border-color: var(--border2); }
+
+.btn-teal { background: var(--teal-soft); color: var(--teal); border-color: #99f6e4; }
+.btn-teal:hover { background: #b2f5ea; }
+
+.btn-success { background: var(--green-soft); color: var(--green); border-color: #bbf7d0; }
+
+.btn-hdr {
+  padding: 6px 13px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg1);
+  color: var(--text2);
+  font-family: var(--font);
+  transition: all 0.15s;
+  display: inline-flex; align-items: center; gap: 5px;
+  box-shadow: var(--shadow-sm);
+}
+.btn-hdr:hover { background: var(--bg2); border-color: var(--border2); box-shadow: var(--shadow); }
+.btn-hdr.blue { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: 0 2px 8px rgba(37,99,235,0.2); }
+.btn-hdr.blue:hover { background: #1d4ed8; }
+
+.geo-active-note {
+  background: var(--teal-soft);
+  border: 1px solid #99f6e4;
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 10px;
+  color: var(--teal);
+  font-family: var(--font-mono);
+  margin-top: -3px;
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 5px;
+  font-weight: 600;
+}
+
+/* ── ALERTS PAGE ── */
+#page-alerts { flex-direction: column; overflow: hidden; }
+
+.alerts-toolbar {
+  padding: 11px 18px;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.filter-label { font-size: 10px; font-weight: 700; color: var(--text4); letter-spacing: 0.5px; text-transform: uppercase; }
+
+.filter-pill {
+  padding: 5px 12px;
+  font-size: 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+.filter-pill:hover { border-color: var(--border2); color: var(--text2); background: var(--bg2); }
+.filter-pill.on { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: 0 2px 6px rgba(37,99,235,0.25); }
+
+.sel-input {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-family: var(--font);
+  outline: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  font-weight: 500;
+}
+.sel-input:focus { border-color: var(--blue-mid); box-shadow: 0 0 0 3px var(--blue-soft); }
+
+#alerts-list { flex: 1; overflow-y: auto; padding: 14px 18px; display: flex; flex-direction: column; gap: 7px; }
+
+.alert-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 13px 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.alert-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.alert-card.resolved { opacity: 0.5; transform: none !important; box-shadow: none !important; }
+
+.alert-card.sev-HIGH     { border-left: 3px solid var(--red); }
+.alert-card.sev-MEDIUM   { border-left: 3px solid var(--yellow); }
+.alert-card.sev-LOW      { border-left: 3px solid var(--green); }
+.alert-card.sev-CRITICAL { border-left: 3px solid var(--red); }
+
+.alert-sev-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.sev-icon-HIGH,.sev-icon-CRITICAL { background: var(--red-soft); }
+.sev-icon-MEDIUM { background: var(--yellow-soft); }
+.sev-icon-LOW { background: var(--green-soft); }
+
+.alert-body { flex: 1; min-width: 0; }
+.alert-title {
+  font-size: 12px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  font-family: var(--font-mono);
+  letter-spacing: 0.2px;
+  color: var(--text);
+}
+.alert-msg { font-size: 12px; color: var(--text3); margin-bottom: 7px; line-height: 1.55; }
+.alert-meta { display: flex; gap: 10px; font-size: 10px; color: var(--text4); font-family: var(--font-mono); flex-wrap: wrap; }
+.alert-meta span { display: flex; align-items: center; gap: 3px; }
+
+.alert-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: flex-start; }
+.btn-xs {
+  padding: 5px 11px;
+  font-size: 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.15s;
+  font-family: var(--font);
+  border: 1px solid transparent;
+}
+.btn-xs-resolve { background: var(--green-soft); color: var(--green); border-color: #bbf7d0; }
+.btn-xs-resolve:hover { background: #d1fae5; }
+.btn-xs-ack { background: var(--blue-soft); color: var(--blue); border-color: #bfdbfe; }
+.btn-xs-ack:hover { background: #dbeafe; }
+
+/* ── ANALYTICS ── */
+#page-analytics { flex-direction: column; overflow: hidden; }
+#analytics-body { flex: 1; overflow-y: auto; padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.chart-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+.chart-card:hover { box-shadow: var(--shadow); }
+.chart-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text4);
+  margin-bottom: 14px;
+}
+
+/* ── SENSORS ── */
+#page-sensors { flex-direction: column; overflow: hidden; }
+#sensors-body { flex: 1; overflow-y: auto; padding: 16px; }
+#sensors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(275px, 1fr)); gap: 12px; }
+
+.sensor-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 15px;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+.sensor-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+
+.sc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
+.sc-name { font-size: 13px; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-time { font-size: 9px; color: var(--text4); font-family: var(--font-mono); }
+
+.sc-score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.sc-score-num { font-size: 26px; font-weight: 800; font-family: var(--font-mono); line-height: 1; }
+
+.sr { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.sr:last-child { border-bottom: none; }
+.sr-name { font-size: 9px; color: var(--text4); width: 72px; text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; font-weight: 600; }
+.sr-bar-wrap { flex: 1; height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.sr-bar { height: 5px; border-radius: 3px; transition: width 0.5s, background 0.5s; }
+.sr-val { font-size: 10px; font-weight: 700; font-family: var(--font-mono); width: 46px; text-align: right; }
+
+/* ── GEOFENCE ── */
+#page-geofence { flex-direction: column; overflow: hidden; }
+#geo-map-wrap { flex: 1; position: relative; }
+#geo-map { width: 100%; height: 100%; }
+#geo-panel {
+  position: absolute; top: 14px; right: 14px;
+  width: 275px;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 15px;
+  z-index: 400;
+  max-height: calc(100% - 28px);
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+.geo-panel-title {
+  font-size: 10px; font-weight: 800; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--text4);
+  margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.geo-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 11px;
+  margin-bottom: 7px;
+  transition: all 0.15s;
+}
+.geo-item:last-child { margin-bottom: 0; }
+.geo-item:hover { background: var(--bg3); }
+.geo-item-name { font-size: 12px; font-weight: 700; margin-bottom: 5px; }
+.geo-item-info { font-size: 10px; color: var(--text4); font-family: var(--font-mono); margin-bottom: 8px; line-height: 1.8; }
+.geo-item-actions { display: flex; gap: 5px; align-items: center; }
+
+/* ── MODALS ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,10,5,0.5);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-title {
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 9px;
+}
+
+.form-row { margin-bottom: 11px; }
+.form-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: block; font-weight: 700; }
+.form-input {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 12px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-family: var(--font);
+  outline: none;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+.form-input:focus { border-color: var(--blue-mid); box-shadow: 0 0 0 3px var(--blue-soft); background: var(--bg1); }
+
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+
+.modal-footer { display: flex; gap: 9px; margin-top: 16px; }
+.modal-footer .btn { flex: 1; margin-bottom: 0; }
+
+/* Simulator */
+.rng-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+.rng-label { font-size: 10px; color: var(--text3); width: 82px; text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; font-weight: 600; }
+.rng-row input[type=range] { flex: 1; accent-color: var(--blue); cursor: pointer; }
+.rng-val { font-size: 11px; font-family: var(--font-mono); width: 46px; text-align: right; color: var(--text2); font-weight: 600; }
+
+.sim-preview {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 11px 14px;
+  margin: 10px 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: center;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+
+/* ── TOAST ── */
+#toast {
+  position: fixed;
+  bottom: 22px; right: 22px;
+  padding: 12px 16px;
+  border-radius: 11px;
+  font-size: 12px;
+  z-index: 9999;
+  max-width: 310px;
+  font-family: var(--font-mono);
+  border: 1px solid;
+  box-shadow: var(--shadow-lg);
+  display: none;
+  animation: toastSlide 0.25s ease;
+  align-items: center; gap: 9px;
+  font-weight: 600;
+}
+@keyframes toastSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+#toast.showing { display: flex; }
+#toast.ok   { background: #f0fdf4; border-color: #bbf7d0; color: var(--green); }
+#toast.err  { background: #fff5f5; border-color: #fecaca; color: var(--red); }
+#toast.warn { background: #fffbeb; border-color: #fde68a; color: var(--yellow); }
+#toast.info { background: #eff6ff; border-color: #bfdbfe; color: var(--blue); }
+
+/* Utilities */
+.empty-msg, .loading-msg {
+  text-align: center;
+  padding: 36px 16px;
+  color: var(--text4);
+  font-size: 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-weight: 500;
+}
+.loading-msg::before {
+  content: '';
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Leaflet */
+.leaflet-popup-content-wrapper {
+  background: var(--bg1) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  border-radius: 11px !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+.leaflet-popup-tip { background: var(--bg1) !important; }
+.leaflet-popup-content { margin: 11px 15px !important; }
+.lp-name { font-weight: 800; font-size: 13px; margin-bottom: 5px; font-family: var(--font); }
+.lp-row { font-size: 11px; font-family: var(--font-mono); margin-top: 3px; font-weight: 500; }
+
+/* Divider line in modals */
+.modal-divider { height: 1px; background: var(--border); margin: 15px 0; }
+
+/* Leaflet tile attribution */
+.leaflet-control-attribution { font-size: 9px !important; opacity: 0.6; }
 </style>
 </head>
 <body>
@@ -187,69 +898,115 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text);min-height:
 
 <!-- TOPBAR -->
 <div id="topbar">
-  <div id="logo">Bridge<span>Guard</span></div>
+  <div class="logo">
+    <div class="logo-icon">🌉</div>
+    Bridge<span class="logo-guard">Guard</span>
+  </div>
   <div class="tb-sep"></div>
-  <div class="pulse-dot"></div>
-  <span class="tb-badge">SYSTEM ONLINE</span>
-  <div class="tb-sep"></div>
-  <span style="font-size:11px;color:var(--text3);display:none" id="mh-label">Maharashtra Smart Infrastructure</span>
-  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-    <button class="btn btn-outline" style="width:auto;padding:5px 12px;font-size:10px" onclick="openSimModal()">&#9654; Simulate</button>
-    <button class="btn btn-blue" style="width:auto;padding:5px 12px;font-size:10px" onclick="openAddBridge()">+ Bridge</button>
-    <div id="sync-time">Connecting…</div>
+  <div class="system-badge">
+    <div class="live-dot"></div>
+    System Online
+  </div>
+
+  <div class="tb-right">
+    <span id="sync-time">Connecting…</span>
+    <button class="btn-hdr" onclick="openSimModal()">▶ Simulate</button>
+    <button class="btn-hdr blue" onclick="openAddBridge()">+ Add Bridge</button>
   </div>
 </div>
 
-<!-- NAV TABS -->
+<!-- NAV -->
 <div id="nav">
-  <div class="nav-tab active" data-page="dashboard" onclick="showPage('dashboard',this)">&#9632; Dashboard</div>
-  <div class="nav-tab" data-page="alerts" onclick="showPage('alerts',this)">&#9651; Alerts <span class="tab-badge" id="alert-tab-count">0</span></div>
-  <div class="nav-tab" data-page="analytics" onclick="showPage('analytics',this)">&#9650; Analytics</div>
-  <div class="nav-tab" data-page="sensors" onclick="showPage('sensors',this)">&#9675; Live Sensors</div>
-  <div class="nav-tab" data-page="geofence" onclick="showPage('geofence',this)">&#9671; Geofences</div>
+  <div class="nav-tab active" onclick="showPage('dashboard',this)"><span class="nav-icon">⬛</span>Dashboard</div>
+  <div class="nav-tab" onclick="showPage('alerts',this)"><span class="nav-icon">⚠</span>Alerts <span class="tab-badge" id="alert-tab-count">0</span></div>
+  <div class="nav-tab" onclick="showPage('analytics',this)"><span class="nav-icon">▲</span>Analytics</div>
+  <div class="nav-tab" onclick="showPage('sensors',this)"><span class="nav-icon">◎</span>Live Sensors</div>
+  <div class="nav-tab" onclick="showPage('geofence',this)"><span class="nav-icon">◇</span>Geofences</div>
 </div>
 
 <!-- STAT BAR -->
 <div id="stat-bar">
-  <div class="stat-cell"><div><div class="stat-num c-blue" id="st-total">–</div><div class="stat-lbl">Total</div></div></div>
-  <div class="stat-cell"><div><div class="stat-num c-green" id="st-safe">–</div><div class="stat-lbl">Safe</div></div></div>
-  <div class="stat-cell"><div><div class="stat-num c-yellow" id="st-warn">–</div><div class="stat-lbl">Warning</div></div></div>
-  <div class="stat-cell"><div><div class="stat-num c-red" id="st-crit">–</div><div class="stat-lbl">Critical</div></div></div>
-  <div class="stat-cell"><div><div class="stat-num c-orange" id="st-alerts">–</div><div class="stat-lbl">Active Alerts</div></div></div>
-  <div class="stat-cell"><div><div class="stat-num c-teal" id="st-geo">–</div><div class="stat-lbl">Geofences</div></div></div>
+  <div class="stat-cell">
+    <div class="stat-icon" style="background:var(--blue-soft)">🌉</div>
+    <div>
+      <div class="stat-num c-blue" id="st-total">–</div>
+      <div class="stat-lbl">Total Bridges</div>
+    </div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-icon" style="background:var(--green-soft)">✓</div>
+    <div>
+      <div class="stat-num c-green" id="st-safe">–</div>
+      <div class="stat-lbl">Safe</div>
+    </div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-icon" style="background:var(--yellow-soft)">⚡</div>
+    <div>
+      <div class="stat-num c-yellow" id="st-warn">–</div>
+      <div class="stat-lbl">Warning</div>
+    </div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-icon" style="background:var(--red-soft)">⚠</div>
+    <div>
+      <div class="stat-num c-red" id="st-crit">–</div>
+      <div class="stat-lbl">Critical</div>
+    </div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-icon" style="background:var(--orange-soft)">🔔</div>
+    <div>
+      <div class="stat-num c-orange" id="st-alerts">–</div>
+      <div class="stat-lbl">Active Alerts</div>
+    </div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-icon" style="background:var(--teal-soft)">◈</div>
+    <div>
+      <div class="stat-num c-teal" id="st-geo">–</div>
+      <div class="stat-lbl">Geofences</div>
+    </div>
+  </div>
 </div>
 
 <!-- DASHBOARD -->
 <div class="page active" id="page-dashboard">
   <div id="dash-left">
-    <div id="bl-header">
-      <span>&#9654;</span>
-      <input id="bridge-search" placeholder="Search bridges…" oninput="filterBridges(this.value)">
-      <span id="bl-count" style="color:var(--text);font-family:var(--font-mono)">0</span>
+    <div class="sidebar-header">
+      <div class="search-wrap">
+        <span>🔍</span>
+        <input id="bridge-search" placeholder="Search bridges…" oninput="filterBridges(this.value)">
+      </div>
+      <span class="bl-count-badge" id="bl-count">0</span>
     </div>
-    <div id="bridge-list"><div class="loading-msg">Connecting…</div></div>
+    <div id="bridge-list"><div class="loading-msg">Loading bridges…</div></div>
   </div>
   <div id="map-wrap"><div id="map"></div></div>
   <div id="detail">
-    <div id="det-empty">&#9671;<br><br>Select a bridge<br>to view details</div>
-    <div id="det-body"></div>
+    <div id="det-empty">
+      <div class="det-empty-icon">🌉</div>
+      <strong style="color:var(--text2)">No bridge selected</strong>
+      <span>Click a bridge on the map<br>or from the list to view details</span>
+    </div>
+    <div id="det-body" style="display:none"></div>
   </div>
 </div>
 
 <!-- ALERTS -->
 <div class="page" id="page-alerts">
-  <div id="alerts-toolbar">
-    <span style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)">Filter:</span>
-    <button class="filter-btn on" onclick="setAlertFilter('ALL',this)">All</button>
-    <button class="filter-btn" onclick="setAlertFilter('HIGH',this)">High</button>
-    <button class="filter-btn" onclick="setAlertFilter('MEDIUM',this)">Medium</button>
-    <button class="filter-btn" onclick="setAlertFilter('unresolved',this)">Active</button>
+  <div class="alerts-toolbar">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-pill on" onclick="setAlertFilter('ALL',this)">All</button>
+    <button class="filter-pill" onclick="setAlertFilter('HIGH',this)">High</button>
+    <button class="filter-pill" onclick="setAlertFilter('MEDIUM',this)">Medium</button>
+    <button class="filter-pill" onclick="setAlertFilter('unresolved',this)">Active Only</button>
     <select class="sel-input" id="alert-bridge-filter" onchange="renderAlerts()">
       <option value="">All Bridges</option>
     </select>
-    <button class="btn btn-red" style="width:auto;padding:5px 12px;font-size:10px;margin-left:auto" onclick="openManualAlert()">+ Manual Alert</button>
+    <button class="btn-hdr" style="margin-left:auto;color:var(--red);border-color:#fecaca;background:var(--red-soft)" onclick="openManualAlert()">+ Create Alert</button>
   </div>
-  <div id="alerts-list"><div class="loading-msg">Loading…</div></div>
+  <div id="alerts-list"><div class="loading-msg">Loading alerts…</div></div>
 </div>
 
 <!-- ANALYTICS -->
@@ -257,30 +1014,30 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text);min-height:
   <div id="analytics-body">
     <div class="chart-card" style="grid-column:span 2">
       <div class="chart-title">Bridge Health Distribution</div>
-      <div style="display:flex;gap:16px;align-items:center">
-        <div style="position:relative;width:180px;height:180px;flex-shrink:0"><canvas id="ch-donut"></canvas></div>
+      <div style="display:flex;gap:24px;align-items:center">
+        <div style="position:relative;width:160px;height:160px;flex-shrink:0"><canvas id="ch-donut"></canvas></div>
         <div id="health-breakdown" style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px"></div>
       </div>
     </div>
     <div class="chart-card">
-      <div class="chart-title">Alerts by Severity</div>
-      <div style="position:relative;height:180px"><canvas id="ch-alerts-sev"></canvas></div>
+      <div class="chart-title">Alerts by Severity (Last 30)</div>
+      <div style="position:relative;height:185px"><canvas id="ch-alerts-sev"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Bridge Types</div>
-      <div style="position:relative;height:180px"><canvas id="ch-types"></canvas></div>
+      <div style="position:relative;height:185px"><canvas id="ch-types"></canvas></div>
     </div>
     <div class="chart-card" style="grid-column:span 2">
       <div class="chart-title">Average Health Score by District</div>
       <div style="position:relative;height:190px"><canvas id="ch-district"></canvas></div>
     </div>
     <div class="chart-card" style="grid-column:span 2">
-      <div class="chart-title">Score Trend – Bridge History</div>
-      <div style="margin-bottom:8px;display:flex;align-items:center;gap:10px">
-        <select class="sel-input" id="trend-bridge-sel" onchange="renderTrend()" style="width:260px">
+      <div class="chart-title">Score Trend – Sensor History</div>
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <select class="sel-input" id="trend-bridge-sel" onchange="renderTrend()" style="width:270px">
           <option value="">Select a bridge…</option>
         </select>
-        <span id="trend-status" style="font-size:10px;color:var(--text3);font-family:var(--font-mono)"></span>
+        <span id="trend-status" style="font-size:10px;color:var(--text4);font-family:var(--font-mono)"></span>
       </div>
       <div style="position:relative;height:175px"><canvas id="ch-trend"></canvas></div>
     </div>
@@ -290,12 +1047,12 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text);min-height:
 <!-- LIVE SENSORS -->
 <div class="page" id="page-sensors">
   <div id="sensors-body">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)">Live Sensor Readings</span>
-      <span style="font-size:10px;color:var(--text3);font-family:var(--font-mono)" id="sensor-upd">–</span>
-      <button class="btn btn-outline" style="width:auto;padding:4px 12px;font-size:10px;margin-left:auto" onclick="openSimModal()">&#9654; Push Simulation</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <span style="font-size:12px;font-weight:800;letter-spacing:0.3px;color:var(--text2)">Live Sensor Readings</span>
+      <span style="font-size:10px;color:var(--text4);font-family:var(--font-mono)" id="sensor-upd">–</span>
+      <button class="btn-hdr" style="margin-left:auto" onclick="openSimModal()">▶ Push Simulation</button>
     </div>
-    <div id="sensors-grid"><div class="loading-msg">Waiting for data…</div></div>
+    <div id="sensors-grid"><div class="loading-msg">Waiting for sensor data…</div></div>
   </div>
 </div>
 
@@ -304,28 +1061,11 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text);min-height:
   <div id="geo-map-wrap">
     <div id="geo-map"></div>
     <div id="geo-panel">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Active Geofences <span id="geo-count" style="color:var(--teal)">0</span></div>
-      <div id="geo-list"><div class="empty-msg" style="padding:10px;font-size:11px">No geofences active</div></div>
-    </div>
-  </div>
-</div>
-
-<!-- INSPECTION LOG PAGE -->
-<div class="page" id="page-inspection">
-  <div style="display:flex;flex-direction:column;height:100%;overflow:hidden">
-    <div style="padding:10px 16px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0">
-      <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text3)">Inspection Log</span>
-      <button class="btn btn-blue" style="width:auto;padding:5px 12px;font-size:10px;margin-left:auto" onclick="openAddInspection()">+ Log Inspection</button>
-      <button class="btn btn-outline" style="width:auto;padding:5px 12px;font-size:10px" onclick="exportCSV()">&#8659; Export CSV</button>
-    </div>
-    <div style="padding:10px 16px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;gap:8px;flex-shrink:0">
-      <select class="sel-input" id="insp-bridge-filter" onchange="renderInspections()"><option value="">All Bridges</option></select>
-      <select class="sel-input" id="insp-outcome-filter" onchange="renderInspections()">
-        <option value="">All Outcomes</option><option value="PASSED">Passed</option><option value="FAILED">Failed</option><option value="NEEDS_REPAIR">Needs Repair</option>
-      </select>
-    </div>
-    <div id="insp-list" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:6px">
-      <div class="loading-msg">Loading inspections…</div>
+      <div class="geo-panel-title">
+        Active Geofences
+        <span style="color:var(--teal);font-family:var(--font-mono);font-weight:700" id="geo-count">0</span>
+      </div>
+      <div id="geo-list"><div class="empty-msg" style="padding:14px;font-size:11px">No geofences active</div></div>
     </div>
   </div>
 </div>
@@ -333,10 +1073,10 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text);min-height:
 </div><!-- #app -->
 
 <!-- ADD BRIDGE MODAL -->
-<div id="modal-overlay">
-  <div id="modal">
-    <div class="modal-title">+ Add New Bridge</div>
-    <div class="form-grid">
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" style="width:490px">
+    <div class="modal-title" style="color:var(--blue)">🌉 Add New Bridge</div>
+    <div class="form-grid-2">
       <div class="form-row"><label class="form-label">Bridge Name *</label><input class="form-input" id="f-name" placeholder="e.g. Nashik Road Bridge"></div>
       <div class="form-row"><label class="form-label">Bridge ID *</label><input class="form-input" id="f-id" placeholder="e.g. BRG-MH-010"></div>
       <div class="form-row"><label class="form-label">District</label><input class="form-input" id="f-district" placeholder="e.g. Nashik"></div>
@@ -354,55 +1094,58 @@ body{font-family:var(--font);background:var(--bg0);color:var(--text);min-height:
     <div class="form-row"><label class="form-label">Location Description</label><input class="form-input" id="f-location" placeholder="e.g. Over Godavari River, NH-60"></div>
     <div class="form-row"><label class="form-label">Initial Health Score (0–100)</label><input class="form-input" id="f-score" type="number" min="0" max="100" value="85"></div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-blue" onclick="saveBridge()">Save Bridge</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBridge()">Save Bridge</button>
     </div>
   </div>
 </div>
 
 <!-- MANUAL ALERT MODAL -->
-<div id="modal2-overlay">
-  <div id="modal2">
-    <div class="modal-title" style="color:var(--red)">&#9888; Create Manual Alert</div>
+<div class="modal-overlay" id="modal2-overlay">
+  <div class="modal" style="width:430px">
+    <div class="modal-title" style="color:var(--red)">⚠ Create Manual Alert</div>
     <div class="form-row"><label class="form-label">Bridge</label><select class="form-input" id="ma-bridge"></select></div>
-    <div class="form-row"><label class="form-label">Alert Type</label>
-      <select class="form-input" id="ma-type">
-        <option>INSPECTION_REQUIRED</option><option>STRUCTURAL_CONCERN</option>
-        <option>TRAFFIC_OVERLOAD</option><option>FLOOD_RISK</option><option>EMERGENCY</option>
-      </select>
+    <div class="form-grid-2">
+      <div class="form-row"><label class="form-label">Alert Type</label>
+        <select class="form-input" id="ma-type">
+          <option>INSPECTION_REQUIRED</option><option>STRUCTURAL_CONCERN</option>
+          <option>TRAFFIC_OVERLOAD</option><option>FLOOD_RISK</option><option>EMERGENCY</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-label">Severity</label>
+        <select class="form-input" id="ma-sev"><option>HIGH</option><option>MEDIUM</option><option>LOW</option></select>
+      </div>
     </div>
-    <div class="form-row"><label class="form-label">Severity</label>
-      <select class="form-input" id="ma-sev"><option>HIGH</option><option>MEDIUM</option><option>LOW</option></select></div>
     <div class="form-row"><label class="form-label">Message</label>
       <input class="form-input" id="ma-msg" placeholder="Describe the concern…"></div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="document.getElementById('modal2-overlay').classList.remove('open')">Cancel</button>
-      <button class="btn btn-red" onclick="saveManualAlert()">Create Alert</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal2-overlay').classList.remove('open')">Cancel</button>
+      <button class="btn btn-danger" onclick="saveManualAlert()">Create Alert</button>
     </div>
   </div>
 </div>
 
 <!-- SIMULATOR MODAL -->
-<div id="modal3-overlay">
-  <div id="modal3">
-    <div class="modal-title" style="color:var(--teal)">&#9654; Sensor Simulator</div>
-    <div class="form-row" style="margin-bottom:10px"><label class="form-label">Bridge</label><select class="form-input" id="sim-bridge"></select></div>
-    <div style="background:var(--bg0);border-radius:5px;padding:12px;margin-bottom:10px">
-      <div class="rng-row"><label>Vibration Hz</label><input type="range" id="sv-vib" min="0" max="2" step="0.01" value="0.3" oninput="simSync('vib',this.value);updateSimPreview()"><span id="sv-vib-v">0.30</span></div>
-      <div class="rng-row"><label>Strain</label><input type="range" id="sv-str" min="0" max="1500" step="10" value="600" oninput="simSync('str',this.value);updateSimPreview()"><span id="sv-str-v">600</span></div>
-      <div class="rng-row"><label>Tilt °</label><input type="range" id="sv-tlt" min="0" max="10" step="0.1" value="1.5" oninput="simSync('tlt',this.value);updateSimPreview()"><span id="sv-tlt-v">1.5</span></div>
-      <div class="rng-row"><label>Temperature</label><input type="range" id="sv-tmp" min="10" max="60" step="1" value="32" oninput="simSync('tmp',this.value);updateSimPreview()"><span id="sv-tmp-v">32</span></div>
-      <div class="rng-row"><label>Load</label><input type="range" id="sv-load" min="0" max="3500" step="50" value="1800" oninput="simSync('load',this.value);updateSimPreview()"><span id="sv-load-v">1800</span></div>
-      <div class="rng-row"><label>Corrosion %</label><input type="range" id="sv-cor" min="0" max="25" step="0.5" value="3" oninput="simSync('cor',this.value);updateSimPreview()"><span id="sv-cor-v">3.0</span></div>
+<div class="modal-overlay" id="modal3-overlay">
+  <div class="modal" style="width:510px">
+    <div class="modal-title" style="color:var(--teal)">▶ Sensor Simulator</div>
+    <div class="form-row" style="margin-bottom:14px"><label class="form-label">Target Bridge</label><select class="form-input" id="sim-bridge"></select></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:15px;margin-bottom:12px">
+      <div class="rng-row"><label class="rng-label">Vibration Hz</label><input type="range" id="sv-vib" min="0" max="2" step="0.01" value="0.3" oninput="simSync('vib',this.value);updateSimPreview()"><span class="rng-val" id="sv-vib-v">0.30</span></div>
+      <div class="rng-row"><label class="rng-label">Strain μɛ</label><input type="range" id="sv-str" min="0" max="1500" step="10" value="600" oninput="simSync('str',this.value);updateSimPreview()"><span class="rng-val" id="sv-str-v">600</span></div>
+      <div class="rng-row"><label class="rng-label">Tilt °</label><input type="range" id="sv-tlt" min="0" max="10" step="0.1" value="1.5" oninput="simSync('tlt',this.value);updateSimPreview()"><span class="rng-val" id="sv-tlt-v">1.5</span></div>
+      <div class="rng-row"><label class="rng-label">Temperature</label><input type="range" id="sv-tmp" min="10" max="60" step="1" value="32" oninput="simSync('tmp',this.value);updateSimPreview()"><span class="rng-val" id="sv-tmp-v">32</span></div>
+      <div class="rng-row"><label class="rng-label">Load kN</label><input type="range" id="sv-load" min="0" max="3500" step="50" value="1800" oninput="simSync('load',this.value);updateSimPreview()"><span class="rng-val" id="sv-load-v">1800</span></div>
+      <div class="rng-row"><label class="rng-label">Corrosion %</label><input type="range" id="sv-cor" min="0" max="25" step="0.5" value="3" oninput="simSync('cor',this.value);updateSimPreview()"><span class="rng-val" id="sv-cor-v">3.0</span></div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <button class="btn btn-outline" style="flex:1;padding:6px" onclick="simRandom()">&#9664;&#9654; Randomize</button>
-      <button class="btn btn-orange" style="flex:1;padding:6px" onclick="simCritical()">&#9888; Simulate Critical</button>
+    <div style="display:flex;gap:9px;margin-bottom:9px">
+      <button class="btn btn-ghost" style="flex:1" onclick="simRandom()">◀▶ Randomize</button>
+      <button class="btn btn-warning" style="flex:1" onclick="simCritical()">⚠ Simulate Critical</button>
     </div>
-    <div id="sim-preview" style="background:var(--bg0);border-radius:4px;padding:9px;margin-bottom:10px;font-family:var(--font-mono);font-size:12px;text-align:center"></div>
+    <div class="sim-preview" id="sim-preview">Loading…</div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="document.getElementById('modal3-overlay').classList.remove('open')">Cancel</button>
-      <button class="btn btn-teal" onclick="pushSim()">&#9658; Push to Firestore</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('modal3-overlay').classList.remove('open')">Cancel</button>
+      <button class="btn btn-teal" onclick="pushSim()">▶ Push to Firestore</button>
     </div>
   </div>
 </div>
@@ -425,490 +1168,480 @@ const FC = {
   appId:"1:356288433221:web:c2c46b46d4dbe13977a72c",
   measurementId:"G-VMQ4S3F3RB"
 };
+
 const app = initializeApp(FC);
 const db = getFirestore(app);
 
-// ── STATE ─────────────────────────────
-let bridges={}, alertsData=[], sensorLatest={}, geofences={};
-let mapMarkers={}, geoCircles={}, geoMapMarkers={}, geoMapCircles={};
-let selectedId=null, alertFilter='ALL', charts={};
+let bridges = {}, alertsData = [], sensorLatest = {}, geofences = {};
+let mapMarkers = {}, geoCircles = {}, geoMapMarkers = {}, geoMapCircles = {};
+let selectedId = null, alertFilter = 'ALL', charts = {};
+let bridgesLoaded = false;
 
-// ── MAPS ──────────────────────────────
-const map = L.map('map').setView([19.7515,75.7139],7);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy;CartoDB',maxZoom:19}).addTo(map);
+// ─── MAPS ─────────────────────────────
+const map = L.map('map', { zoomControl: true }).setView([19.7515, 75.7139], 7);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy;CartoDB', maxZoom: 19 }).addTo(map);
 
-const geoMap = L.map('geo-map').setView([19.7515,75.7139],7);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy;CartoDB',maxZoom:19}).addTo(geoMap);
+const geoMap = L.map('geo-map').setView([19.7515, 75.7139], 7);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy;CartoDB', maxZoom: 19 }).addTo(geoMap);
 window.geoMap = geoMap;
 
-// ── HELPERS ───────────────────────────
-function computeStatus(s){ return s>=90?'SAFE':s>=50?'WARNING':'CRITICAL'; }
-function statusColor(s){ return s==='SAFE'?'#3dd68c':s==='WARNING'?'#f5c842':'#ff3f3f'; }
-function scoreColor(s){ return s>=90?'#3dd68c':s>=50?'#f5c842':'#ff3f3f'; }
-function badgeClass(s){ return s==='SAFE'?'b-safe':s==='WARNING'?'b-warning':'b-critical'; }
-function sensorLevel(k,v){
-  const t={vibration:[.5,.8],strain:[800,1000],tilt:[3,5],corrosion:[5,10],load:[2000,2500]};
-  const r=t[k]; if(!r)return'safe';
-  return v>r[1]?'critical':v>r[0]?'warning':'safe';
-}
-function sensorLevelColor(l){ return l==='critical'?'#ff3f3f':l==='warning'?'#f5c842':'#3dd68c'; }
-function sensorMax(k){ return{vibration:2,strain:1500,tilt:10,temperature:60,load:3500,corrosion:25}[k]||100; }
-function computeScore(v){
-  let s=100;
-  if(v.vibration>.5)s-=20; if(v.strain>1000)s-=20;
-  if(v.tilt>5)s-=20; if(v.corrosion>10)s-=15; if(v.load>2500)s-=15;
-  return Math.max(0,s);
-}
-function timeAgo(ts){
-  if(!ts)return'–';
-  const sec=ts.seconds?ts.seconds:Math.floor((ts||0)/1000);
-  const d=Math.floor(Date.now()/1000)-sec;
-  return d<60?d+'s ago':d<3600?Math.floor(d/60)+'m ago':Math.floor(d/3600)+'h ago';
-}
-function toast(msg,type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className=type;t.style.display='block';
-  setTimeout(()=>t.style.display='none',3500);
-}
-window.toast=toast;
+// ─── HELPERS ──────────────────────────
+function computeStatus(s) { return s >= 90 ? 'SAFE' : s >= 50 ? 'WARNING' : 'CRITICAL'; }
+function statusColor(s)   { return s === 'SAFE' ? '#16a34a' : s === 'WARNING' ? '#d97706' : '#dc2626'; }
+function scoreColor(s)    { return s >= 90 ? '#16a34a' : s >= 50 ? '#d97706' : '#dc2626'; }
+function badgeClass(s)    { return s === 'SAFE' ? 'b-safe' : s === 'WARNING' ? 'b-warning' : 'b-critical'; }
 
-// ── STATS ─────────────────────────────
-function updateStats(){
-  const list=Object.values(bridges);
-  document.getElementById('st-total').textContent=list.length;
-  document.getElementById('st-safe').textContent=list.filter(b=>b.status==='SAFE').length;
-  document.getElementById('st-warn').textContent=list.filter(b=>b.status==='WARNING').length;
-  document.getElementById('st-crit').textContent=list.filter(b=>b.status==='CRITICAL').length;
-  const active=alertsData.filter(a=>!a.resolved).length;
-  document.getElementById('st-alerts').textContent=active;
-  document.getElementById('alert-tab-count').textContent=active>0?active:'0';
-  const gcount=Object.keys(geofences).length;
-  document.getElementById('st-geo').textContent=gcount;
-  document.getElementById('geo-count').textContent=gcount;
+function sensorLevel(k, v) {
+  const t = { vibration:[0.5,0.8], strain:[800,1000], tilt:[3,5], corrosion:[5,10], load:[2000,2500] };
+  const r = t[k]; if (!r) return 'safe';
+  return v > r[1] ? 'critical' : v > r[0] ? 'warning' : 'safe';
+}
+function sensorLevelColor(l) { return l==='critical'?'#dc2626':l==='warning'?'#d97706':'#16a34a'; }
+function sensorMax(k) { return {vibration:2,strain:1500,tilt:10,temperature:60,load:3500,corrosion:25}[k]||100; }
+function computeScore(v) {
+  let s = 100;
+  if (v.vibration>0.5) s-=20; if (v.strain>1000) s-=20;
+  if (v.tilt>5) s-=20; if (v.corrosion>10) s-=15; if (v.load>2500) s-=15;
+  return Math.max(0, s);
+}
+function timeAgo(ts) {
+  if (!ts) return '–';
+  const sec = ts.seconds ? ts.seconds : Math.floor((ts||0)/1000);
+  const d = Math.floor(Date.now()/1000) - sec;
+  return d<60? d+'s ago': d<3600? Math.floor(d/60)+'m ago': Math.floor(d/3600)+'h ago';
 }
 
-// ── SIDEBAR ───────────────────────────
-function renderSidebar(filter=''){
-  const el=document.getElementById('bridge-list');
-  const sorted=Object.values(bridges).sort((a,b)=>(a.healthScore||0)-(b.healthScore||0));
-  const list=filter?sorted.filter(b=>(b.name||b.id||'').toLowerCase().includes(filter.toLowerCase())):sorted;
-  document.getElementById('bl-count').textContent=list.length;
-  if(!list.length){el.innerHTML='<div class="empty-msg">No bridges</div>';return;}
-  el.innerHTML='';
-  list.forEach(b=>{
-    const sc=b.healthScore||0, st=b.status||computeStatus(sc);
-    const div=document.createElement('div');
-    div.className='bcard'+(b.id===selectedId?' sel':'')+(st==='CRITICAL'?' crit-flash':'');
-    div.dataset.id=b.id;
-    div.innerHTML=`
+function toast(msg, type='info') {
+  const t = document.getElementById('toast');
+  const icons = {ok:'✓',err:'✗',warn:'⚠',info:'ℹ'};
+  t.innerHTML = `<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  t.className = 'showing '+type;
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>{ t.className=''; }, 3500);
+}
+window.toast = toast;
+
+function updateStats() {
+  const list = Object.values(bridges);
+  document.getElementById('st-total').textContent = list.length;
+  document.getElementById('st-safe').textContent  = list.filter(b=>b.status==='SAFE').length;
+  document.getElementById('st-warn').textContent  = list.filter(b=>b.status==='WARNING').length;
+  document.getElementById('st-crit').textContent  = list.filter(b=>b.status==='CRITICAL').length;
+  const active = alertsData.filter(a=>!a.resolved).length;
+  document.getElementById('st-alerts').textContent = active;
+  document.getElementById('alert-tab-count').textContent = active>0?active:'0';
+  const gc = Object.keys(geofences).length;
+  document.getElementById('st-geo').textContent = gc;
+  document.getElementById('geo-count').textContent = gc;
+}
+
+function renderSidebar(filter='') {
+  const el = document.getElementById('bridge-list');
+  const sorted = Object.values(bridges).sort((a,b)=>(a.healthScore||0)-(b.healthScore||0));
+  const list = filter ? sorted.filter(b=>(b.name||b.id||'').toLowerCase().includes(filter.toLowerCase())) : sorted;
+  document.getElementById('bl-count').textContent = list.length;
+  if (!list.length) {
+    el.innerHTML = bridgesLoaded
+      ? '<div class="empty-msg"><span>🌉</span><span>No bridges found</span></div>'
+      : '<div class="loading-msg">Connecting to Firebase…</div>';
+    return;
+  }
+  el.innerHTML = '';
+  list.forEach(b => {
+    const sc = b.healthScore||0, st = b.status||computeStatus(sc);
+    const div = document.createElement('div');
+    div.className = 'bcard'+(b.id===selectedId?' sel':'')+(st==='CRITICAL'?' crit-flash':'');
+    div.dataset.id = b.id;
+    div.innerHTML = `
       <div class="bc-r1">
         <span class="bc-name">${b.name||b.id}</span>
         <span class="badge ${badgeClass(st)}">${st}</span>
       </div>
       <div class="bc-r2">
-        <span>${b.district||'–'}</span><span>${b.type||'–'}</span>
-        <span style="margin-left:auto;font-weight:700;color:${scoreColor(sc)};font-family:var(--font-mono)">${sc}%</span>
+        <span>${b.district||'–'}</span>
+        <span style="color:var(--border2)">·</span>
+        <span>${b.type||'–'}</span>
+        <span class="bc-score" style="color:${scoreColor(sc)}">${sc}%</span>
       </div>
       <div class="sbar"><div class="sbar-fill" style="width:${sc}%;background:${scoreColor(sc)}"></div></div>
     `;
-    div.onclick=()=>selectBridge(b.id);
+    div.onclick = ()=>selectBridge(b.id);
     el.appendChild(div);
   });
 }
-window.filterBridges=v=>renderSidebar(v);
+window.filterBridges = v => renderSidebar(v);
 
-// ── MARKERS ───────────────────────────
-function makeIcon(status){
-  const c=statusColor(status);
+function makeIcon(status) {
+  const c = statusColor(status);
   return L.divIcon({
     className:'',
-    html:`<div style="width:12px;height:12px;border-radius:50%;background:${c};border:2px solid rgba(255,255,255,.25);box-shadow:0 0 8px ${c}88"></div>`,
-    iconSize:[12,12],iconAnchor:[6,6]
+    html:`<div style="width:13px;height:13px;border-radius:50%;background:${c};border:2px solid ${c};box-shadow:0 0 0 3px ${c}33,0 2px 6px ${c}66"></div>`,
+    iconSize:[13,13], iconAnchor:[6,6]
   });
 }
-function renderMarker(b){
-  const sc=b.healthScore||0,st=b.status||computeStatus(sc);
-  if(mapMarkers[b.id]){mapMarkers[b.id].setIcon(makeIcon(st));return;}
-  if(!b.latitude||!b.longitude)return;
-  const m=L.marker([b.latitude,b.longitude],{icon:makeIcon(st)}).addTo(map)
-    .bindPopup(`<div class="lp-name">${b.name||b.id}</div>
-      <div class="lp-row" style="color:${statusColor(st)}">${st} — ${sc}%</div>
-      <div class="lp-row" style="color:var(--text3)">${b.latitude.toFixed(4)}, ${b.longitude.toFixed(4)}</div>`,{maxWidth:200});
+
+function renderMarker(b) {
+  const sc = b.healthScore||0, st = b.status||computeStatus(sc);
+  if (mapMarkers[b.id]) { mapMarkers[b.id].setIcon(makeIcon(st)); return; }
+  if (!b.latitude||!b.longitude) return;
+  const m = L.marker([b.latitude,b.longitude],{icon:makeIcon(st)}).addTo(map)
+    .bindPopup(`
+      <div class="lp-name">${b.name||b.id}</div>
+      <div class="lp-row" style="color:${statusColor(st)};font-weight:700">${st} — ${sc}% health</div>
+      <div class="lp-row" style="color:var(--text4)">${b.district||''} · ${b.type||''}</div>
+      <div class="lp-row" style="color:var(--text4)">${b.latitude.toFixed(4)}, ${b.longitude.toFixed(4)}</div>
+    `,{maxWidth:220});
   m.on('click',()=>selectBridge(b.id));
-  mapMarkers[b.id]=m;
+  mapMarkers[b.id] = m;
 }
 
-// ── DETAIL PANEL ─────────────────────
-function selectBridge(id){
-  selectedId=id;
+function selectBridge(id) {
+  selectedId = id;
   document.querySelectorAll('.bcard').forEach(c=>c.classList.toggle('sel',c.dataset.id===id));
-  const b=bridges[id];if(!b)return;
-  if(b.latitude&&b.longitude&&mapMarkers[id]){map.setView([b.latitude,b.longitude],13);mapMarkers[id].openPopup();}
+  const b = bridges[id]; if (!b) return;
+  if (b.latitude&&b.longitude&&mapMarkers[id]) { map.setView([b.latitude,b.longitude],13); mapMarkers[id].openPopup(); }
   renderDetail(id);
 }
 
-function renderDetail(id){
-  const b=bridges[id];if(!b)return;
-  const sc=b.healthScore||0,st=b.status||computeStatus(sc);
-  const color=scoreColor(sc);
-  const s=sensorLatest[id]||{};
-  const hasGeo=!!geofences[id];
-  document.getElementById('det-empty').style.display='none';
-  const dc=document.getElementById('det-body');dc.style.display='block';
-  const sRows=['vibration','strain','tilt','temperature','load','corrosion'].map(k=>{
-    const val=s[k]!==undefined?s[k]:'–';
-    const lv=typeof val==='number'?sensorLevel(k,val):'safe';
-    const c=sensorLevelColor(lv);
-    return`<div class="sbox" style="border-color:${c}33">
+function makeScoreRing(score, color) {
+  const r=27, cx=32, cy=32, circ=2*Math.PI*r, dash=(score/100)*circ;
+  return `<svg width="64" height="64" viewBox="0 0 64 64">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e8e4dc" stroke-width="6"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="6"
+      stroke-dasharray="${dash} ${circ}" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function renderDetail(id) {
+  const b = bridges[id]; if (!b) return;
+  const sc = b.healthScore||0, st = b.status||computeStatus(sc);
+  const color = scoreColor(sc);
+  const s = sensorLatest[id]||{};
+  const hasGeo = !!geofences[id];
+  const activeAlerts = alertsData.filter(a=>a.bridgeId===id&&!a.resolved).length;
+  document.getElementById('det-empty').style.display = 'none';
+  const dc = document.getElementById('det-body'); dc.style.display = 'block';
+
+  const sRows = ['vibration','strain','tilt','temperature','load','corrosion'].map(k=>{
+    const val = s[k]!==undefined?s[k]:null;
+    const lv = (val!==null&&typeof val==='number')?sensorLevel(k,val):'safe';
+    const c = sensorLevelColor(lv);
+    return `<div class="sbox" style="border-color:${val!==null?c+'33':'var(--border)'}">
       <div class="sbox-name">${k}</div>
-      <div class="sbox-val" style="color:${c}">${typeof val==='number'?val.toFixed(2):val}</div>
-      <div class="sbox-st" style="color:${c}">${lv.toUpperCase()}</div>
+      <div class="sbox-val" style="color:${val!==null?c:'var(--text4)'}">${val!==null?val.toFixed(2):'–'}</div>
+      <div class="sbox-st" style="color:${val!==null?c:'var(--text4)'}">${val!==null?lv.toUpperCase():'NO DATA'}</div>
     </div>`;
   }).join('');
-  const activeAlerts=alertsData.filter(a=>a.bridgeId===id&&!a.resolved).length;
-  dc.innerHTML=`
+
+  dc.innerHTML = `
     <div class="det-name">${b.name||b.id}</div>
-    <div class="det-sub">${b.district||''} ${b.location?'· '+b.location:''}</div>
-    <div class="score-wrap">
-      <div>
-        <div class="score-big" style="color:${color}">${sc}</div>
-        <div style="font-size:9px;color:var(--text3);letter-spacing:.5px">HEALTH %</div>
-      </div>
-      <div style="flex:1">
-        <div class="sbar" style="height:7px"><div class="sbar-fill" style="width:${sc}%;background:${color};height:7px;border-radius:4px"></div></div>
-        <div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">
+    <div class="det-sub">${[b.district,b.location].filter(Boolean).join(' · ')}</div>
+    <div class="score-card">
+      <div class="score-ring">${makeScoreRing(sc,color)}<div class="score-ring-val" style="color:${color}">${sc}</div></div>
+      <div class="score-meta">
+        <div class="score-meta-label">Health Score</div>
+        <div class="score-meta-badges">
           <span class="badge ${badgeClass(st)}">${st}</span>
-          ${hasGeo?'<span class="badge" style="background:#0a1e2a;color:var(--teal)">&#9671; GEO</span>':''}
-          ${activeAlerts>0?`<span class="badge b-critical">&#9888; ${activeAlerts} alert${activeAlerts>1?'s':''}</span>`:''}
+          ${hasGeo?'<span class="badge" style="background:var(--teal-soft);color:var(--teal);border-color:#99f6e4">◈ GEO</span>':''}
+          ${activeAlerts>0?`<span class="badge b-critical">⚠ ${activeAlerts}</span>`:''}
         </div>
       </div>
     </div>
-    <div class="sec-title">Bridge Info</div>
-    <div style="background:var(--bg0);border-radius:4px;padding:8px;margin-bottom:8px">
+    <div class="sec-header">Bridge Info</div>
+    <div class="info-table">
       <div class="info-row"><span class="info-key">Type</span><span class="info-val">${b.type||'–'}</span></div>
       <div class="info-row"><span class="info-key">Length</span><span class="info-val">${b.length?b.length+'m':'–'}</span></div>
       <div class="info-row"><span class="info-key">Age</span><span class="info-val">${b.age?b.age+' yrs':'–'}</span></div>
-      <div class="info-row"><span class="info-key">Coords</span><span class="info-val">${b.latitude?.toFixed(5)||'–'}</span></div>
+      <div class="info-row"><span class="info-key">Coords</span><span class="info-val">${b.latitude?b.latitude.toFixed(4)+', '+b.longitude.toFixed(4):'–'}</span></div>
       <div class="info-row"><span class="info-key">Updated</span><span class="info-val">${timeAgo(b.lastUpdated)}</span></div>
     </div>
-    <div class="sec-title">Sensor Readings</div>
+    <div class="sec-header">Sensor Readings</div>
     <div class="sgrid">${sRows}</div>
-    <div class="divider"></div>
-    <div class="sec-title">Actions</div>
+    <div class="sec-header">Actions</div>
     ${b.latitude&&b.longitude?`
-      <button class="btn ${hasGeo?'btn-orange':'btn-red'}" id="btn-geo-d" onclick="createGeoAlert('${id}')">
-        ${hasGeo?'&#9671; Update Geofence':'&#9888; Create Alert + Geofence'}
+      <button class="btn ${hasGeo?'btn-warning':'btn-danger'}" id="btn-geo-d" onclick="createGeoAlert('${id}')">
+        ${hasGeo?'◈ Update Geofence':'⚠ Create Alert + Geofence'}
       </button>
-      ${hasGeo?`<div class="geo-ok">&#10003; 1km geofence active · ${geofences[id].createdAt?new Date(geofences[id].createdAt.seconds*1000).toLocaleDateString():'saved'}</div>`:''}
-    `:'<div style="font-size:11px;color:var(--text3)">No coordinates set</div>'}
-    <button class="btn btn-blue" onclick="openSimForBridge('${id}')">&#9654; Simulate Sensors</button>
-    <button class="btn btn-outline" onclick="openManualAlert('${id}')">&#9651; Manual Alert</button>
-    <div class="divider"></div>
-    <div style="font-size:10px;color:var(--text3)">Active alerts on this bridge: <strong style="color:var(--orange)">${activeAlerts}</strong></div>
+      ${hasGeo?`<div class="geo-active-note">✓ 1km geofence active · ${geofences[id].createdAt?new Date(geofences[id].createdAt.seconds*1000).toLocaleDateString():'saved'}</div>`:''}
+    `:`<div style="font-size:11px;color:var(--text4);padding:4px 0">No coordinates set.</div>`}
+    <button class="btn btn-primary" onclick="openSimForBridge('${id}')">▶ Simulate Sensors</button>
+    <button class="btn btn-ghost" onclick="openManualAlert('${id}')">⚠ Manual Alert</button>
+    <div style="padding-top:9px;font-size:10px;color:var(--text4);font-family:var(--font-mono);font-weight:600">Active alerts: <strong style="color:var(--orange)">${activeAlerts}</strong></div>
   `;
 }
 
-// ── GEOFENCE CREATE ───────────────────
-window.createGeoAlert=async function(bid){
-  const b=bridges[bid];if(!b||!b.latitude||!b.longitude)return;
-  const btn=document.getElementById('btn-geo-d');
-  if(btn){btn.disabled=true;btn.textContent='Saving…';}
-  try{
+window.createGeoAlert = async function(bid) {
+  const b = bridges[bid]; if (!b||!b.latitude||!b.longitude) return;
+  const btn = document.getElementById('btn-geo-d');
+  if (btn) { btn.disabled=true; btn.textContent='Saving…'; }
+  try {
     await setDoc(doc(db,'geofences',bid),{
-      bridgeId:bid,latitude:b.latitude,longitude:b.longitude,
-      radiusMeters:1000,active:true,createdAt:serverTimestamp(),
-      bridgeName:b.name||bid,status:b.status||'CRITICAL'
+      bridgeId:bid, latitude:b.latitude, longitude:b.longitude,
+      radiusMeters:1000, active:true, createdAt:serverTimestamp(),
+      bridgeName:b.name||bid, status:b.status||'CRITICAL'
     });
     await addDoc(collection(db,'alerts'),{
-      bridgeId:bid,type:'GEOFENCE_CREATED',
+      bridgeId:bid, type:'GEOFENCE_CREATED',
       message:`1km geofence created for ${b.name||bid}. Lat: ${b.latitude.toFixed(5)}, Lng: ${b.longitude.toFixed(5)}`,
       severity:b.status==='CRITICAL'?'HIGH':'MEDIUM',
-      timestamp:serverTimestamp(),status:'ACTIVE',resolved:false,
-      latitude:b.latitude,longitude:b.longitude
+      timestamp:serverTimestamp(), status:'ACTIVE', resolved:false,
+      latitude:b.latitude, longitude:b.longitude
     });
     await setDoc(doc(db,'bridges',bid),{geofenceActive:true,geofenceLat:b.latitude,geofenceLng:b.longitude},{merge:true});
-    // Draw on dashboard map
-    if(geoCircles[bid])map.removeLayer(geoCircles[bid]);
-    geoCircles[bid]=L.circle([b.latitude,b.longitude],{
-      radius:1000,color:'#ff7a2f',fillColor:'#ff7a2f',fillOpacity:.07,weight:1.5,dashArray:'6,4'
+    if (geoCircles[bid]) map.removeLayer(geoCircles[bid]);
+    geoCircles[bid] = L.circle([b.latitude,b.longitude],{
+      radius:1000,color:'#ea580c',fillColor:'#ea580c',fillOpacity:0.07,weight:1.5,dashArray:'6,4'
     }).addTo(map);
     toast('Geofence saved for '+(b.name||bid),'ok');
-  }catch(e){toast('Error: '+e.message,'err');if(btn){btn.disabled=false;btn.textContent='Create Alert + Geofence';}}
+  } catch(e) {
+    toast('Error: '+e.message,'err');
+    if (btn) { btn.disabled=false; btn.textContent='⚠ Create Alert + Geofence'; }
+  }
 };
 
-// ── ALERTS ────────────────────────────
-window.setAlertFilter=function(f,btn){
-  alertFilter=f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+window.setAlertFilter = function(f,btn) {
+  alertFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   renderAlerts();
 };
-window.renderAlerts=function(){
-  let list=[...alertsData].reverse();
-  if(alertFilter==='HIGH')list=list.filter(a=>a.severity==='HIGH');
-  else if(alertFilter==='MEDIUM')list=list.filter(a=>a.severity==='MEDIUM');
-  else if(alertFilter==='unresolved')list=list.filter(a=>!a.resolved);
-  const bf=document.getElementById('alert-bridge-filter')?.value||'';
-  if(bf)list=list.filter(a=>a.bridgeId===bf);
-  const el=document.getElementById('alerts-list');
-  if(!list.length){el.innerHTML='<div class="empty-msg">No alerts match filter</div>';return;}
+
+window.renderAlerts = function() {
+  let list = [...alertsData].reverse();
+  if (alertFilter==='HIGH') list = list.filter(a=>a.severity==='HIGH');
+  else if (alertFilter==='MEDIUM') list = list.filter(a=>a.severity==='MEDIUM');
+  else if (alertFilter==='unresolved') list = list.filter(a=>!a.resolved);
+  const bf = document.getElementById('alert-bridge-filter')?.value||'';
+  if (bf) list = list.filter(a=>a.bridgeId===bf);
+  const el = document.getElementById('alerts-list');
+  if (!list.length) { el.innerHTML='<div class="empty-msg"><span>🔔</span><span>No alerts match current filter</span></div>'; return; }
   el.innerHTML='';
   list.forEach(a=>{
-    const b=bridges[a.bridgeId];
-    const ts=a.timestamp?.seconds?new Date(a.timestamp.seconds*1000).toLocaleString():'–';
-    const card=document.createElement('div');
-    card.className='alert-card'+(a.resolved?' resolved':'');
-    card.innerHTML=`
-      <div class="alert-sev-dot sev-${a.severity||'LOW'}"></div>
+    const b = bridges[a.bridgeId];
+    const ts = a.timestamp?.seconds?new Date(a.timestamp.seconds*1000).toLocaleString():'–';
+    const sevIcon = a.severity==='HIGH'||a.severity==='CRITICAL'?'🔴':a.severity==='MEDIUM'?'🟡':'🟢';
+    const card = document.createElement('div');
+    card.className = `alert-card sev-${a.severity||'LOW'}${a.resolved?' resolved':''}`;
+    card.innerHTML = `
+      <div class="alert-sev-icon sev-icon-${a.severity||'LOW'}">${sevIcon}</div>
       <div class="alert-body">
         <div class="alert-title">
           ${a.type||'ALERT'}
-          ${a.severity?`<span class="badge ${badgeClass(a.severity==='HIGH'?'CRITICAL':a.severity==='MEDIUM'?'WARNING':'SAFE')}">${a.severity}</span>`:''}
-          ${a.resolved?'<span class="badge b-safe">&#10003; RESOLVED</span>':'<span class="badge b-critical">ACTIVE</span>'}
+          ${a.severity?`<span class="badge ${badgeClass(a.severity==='HIGH'||a.severity==='CRITICAL'?'CRITICAL':a.severity==='MEDIUM'?'WARNING':'SAFE')}">${a.severity}</span>`:''}
+          ${a.resolved?'<span class="badge b-safe">✓ RESOLVED</span>':'<span class="badge b-critical">ACTIVE</span>'}
         </div>
         <div class="alert-msg">${a.message||'–'}</div>
         <div class="alert-meta">
-          <span>&#9632; ${b?b.name||a.bridgeId:a.bridgeId||'–'}</span>
-          <span>&#9651; ${ts}</span>
-          ${a.latitude?`<span>&#9671; ${a.latitude.toFixed(4)}, ${a.longitude?.toFixed(4)||'–'}</span>`:''}
+          <span>⬛ ${b?b.name||a.bridgeId:a.bridgeId||'–'}</span>
+          <span>⏱ ${ts}</span>
+          ${a.latitude?`<span>◈ ${a.latitude.toFixed(4)}, ${a.longitude?.toFixed(4)||'–'}</span>`:''}
         </div>
       </div>
-      ${!a.resolved?`<div class="alert-acts">
-        <button class="btn-sm btn-sm-ack" onclick="ackAlert('${a.id}')">ACK</button>
-        <button class="btn-sm btn-sm-resolve" onclick="resolveAlert('${a.id}')">&#10003;</button>
+      ${!a.resolved?`<div class="alert-actions">
+        <button class="btn-xs btn-xs-ack" onclick="ackAlert('${a.id}')">ACK</button>
+        <button class="btn-xs btn-xs-resolve" onclick="resolveAlert('${a.id}')">✓ Resolve</button>
       </div>`:''}
     `;
     el.appendChild(card);
   });
 };
-window.resolveAlert=async function(id){
-  try{await updateDoc(doc(db,'alerts',id),{resolved:true,resolvedAt:serverTimestamp()});toast('Alert resolved','ok');}
-  catch(e){toast('Error: '+e.message,'err');}
+
+window.resolveAlert = async function(id) {
+  try { await updateDoc(doc(db,'alerts',id),{resolved:true,resolvedAt:serverTimestamp()}); toast('Alert resolved','ok'); }
+  catch(e) { toast('Error: '+e.message,'err'); }
 };
-window.ackAlert=async function(id){
-  try{await updateDoc(doc(db,'alerts',id),{status:'ACKNOWLEDGED'});toast('Alert acknowledged','ok');}
-  catch(e){toast('Error: '+e.message,'err');}
+window.ackAlert = async function(id) {
+  try { await updateDoc(doc(db,'alerts',id),{status:'ACKNOWLEDGED'}); toast('Alert acknowledged','info'); }
+  catch(e) { toast('Error: '+e.message,'err'); }
 };
-function populateAlertBridgeSel(){
-  const sel=document.getElementById('alert-bridge-filter');
-  if(!sel)return;
-  const cur=sel.value;
-  sel.innerHTML='<option value="">All Bridges</option>';
-  Object.values(bridges).forEach(b=>{sel.innerHTML+=`<option value="${b.id}" ${b.id===cur?'selected':''}>${b.name||b.id}</option>`;});
-  sel.value=cur;
+
+function populateAlertBridgeSel() {
+  const sel = document.getElementById('alert-bridge-filter');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Bridges</option>';
+  Object.values(bridges).forEach(b=>{ sel.innerHTML+=`<option value="${b.id}" ${b.id===cur?'selected':''}>${b.name||b.id}</option>`; });
+  sel.value = cur;
 }
 
-// ── MANUAL ALERT ─────────────────────
-window.openManualAlert=function(bid=''){
-  const sel=document.getElementById('ma-bridge');
+window.openManualAlert = function(bid='') {
+  const sel = document.getElementById('ma-bridge');
   sel.innerHTML='';
-  Object.values(bridges).forEach(b=>{sel.innerHTML+=`<option value="${b.id}" ${b.id===bid?'selected':''}>${b.name||b.id}</option>`;});
+  Object.values(bridges).forEach(b=>{ sel.innerHTML+=`<option value="${b.id}" ${b.id===bid?'selected':''}>${b.name||b.id}</option>`; });
   document.getElementById('modal2-overlay').classList.add('open');
 };
-window.saveManualAlert=async function(){
-  const bid=document.getElementById('ma-bridge').value;
-  const type=document.getElementById('ma-type').value;
-  const sev=document.getElementById('ma-sev').value;
-  const msg=document.getElementById('ma-msg').value.trim();
-  if(!bid||!msg){toast('Fill all fields','err');return;}
-  try{
-    await addDoc(collection(db,'alerts'),{
-      bridgeId:bid,type,severity:sev,message:msg,
-      timestamp:serverTimestamp(),status:'ACTIVE',resolved:false
-    });
+window.saveManualAlert = async function() {
+  const bid=document.getElementById('ma-bridge').value,type=document.getElementById('ma-type').value;
+  const sev=document.getElementById('ma-sev').value,msg=document.getElementById('ma-msg').value.trim();
+  if (!bid||!msg) { toast('Fill all fields','err'); return; }
+  try {
+    await addDoc(collection(db,'alerts'),{bridgeId:bid,type,severity:sev,message:msg,timestamp:serverTimestamp(),status:'ACTIVE',resolved:false});
     document.getElementById('modal2-overlay').classList.remove('open');
     document.getElementById('ma-msg').value='';
     toast('Alert created','ok');
-  }catch(e){toast('Error: '+e.message,'err');}
+  } catch(e) { toast('Error: '+e.message,'err'); }
 };
 
-// ── ADD BRIDGE ───────────────────────
-window.openAddBridge=function(){document.getElementById('modal-overlay').classList.add('open');};
-window.closeModal=function(){document.getElementById('modal-overlay').classList.remove('open');};
-window.saveBridge=async function(){
-  const name=document.getElementById('f-name').value.trim();
-  const id=document.getElementById('f-id').value.trim();
-  const lat=parseFloat(document.getElementById('f-lat').value);
-  const lng=parseFloat(document.getElementById('f-lng').value);
+window.openAddBridge = function() { document.getElementById('modal-overlay').classList.add('open'); };
+window.closeModal = function() { document.getElementById('modal-overlay').classList.remove('open'); };
+window.saveBridge = async function() {
+  const name=document.getElementById('f-name').value.trim(), id=document.getElementById('f-id').value.trim();
+  const lat=parseFloat(document.getElementById('f-lat').value), lng=parseFloat(document.getElementById('f-lng').value);
   const sc=parseInt(document.getElementById('f-score').value)||85;
-  if(!name||!id||isNaN(lat)||isNaN(lng)){toast('Name, ID, Lat, Lng required','err');return;}
-  try{
+  if (!name||!id||isNaN(lat)||isNaN(lng)) { toast('Name, ID, Lat & Lng are required','err'); return; }
+  try {
     await setDoc(doc(db,'bridges',id),{
-      name,district:document.getElementById('f-district').value,
-      type:document.getElementById('f-type').value,
-      latitude:lat,longitude:lng,
+      name, district:document.getElementById('f-district').value,
+      type:document.getElementById('f-type').value, latitude:lat, longitude:lng,
       length:parseInt(document.getElementById('f-length').value)||0,
       age:parseInt(document.getElementById('f-age').value)||0,
       location:document.getElementById('f-location').value,
-      healthScore:sc,status:computeStatus(sc),lastUpdated:serverTimestamp()
+      healthScore:sc, status:computeStatus(sc), lastUpdated:serverTimestamp()
     });
-    closeModal();toast('Bridge "'+name+'" added','ok');
-  }catch(e){toast('Error: '+e.message,'err');}
+    closeModal();
+    toast('Bridge "'+name+'" added','ok');
+  } catch(e) { toast('Error: '+e.message,'err'); }
 };
 
-// ── SIMULATOR ────────────────────────
-window.simSync=function(k,v){document.getElementById('sv-'+k+'-v').textContent=parseFloat(v).toFixed(k==='str'?0:k==='tmp'?0:k==='load'?0:2);}
-window.simRandom=function(){
+window.simSync = function(k,v) {
+  document.getElementById('sv-'+k+'-v').textContent = parseFloat(v).toFixed(k==='str'||k==='tmp'||k==='load'?0:2);
+};
+window.simRandom = function() {
   const vals={vib:(Math.random()*1.5).toFixed(2),str:Math.floor(Math.random()*1400),tlt:(Math.random()*8).toFixed(1),tmp:Math.floor(20+Math.random()*40),load:Math.floor(Math.random()*3400),cor:(Math.random()*20).toFixed(1)};
-  Object.entries(vals).forEach(([k,v])=>{
-    const el=document.getElementById('sv-'+k);const sp=document.getElementById('sv-'+k+'-v');
-    if(el)el.value=v;if(sp)sp.textContent=v;
-  });
+  Object.entries(vals).forEach(([k,v])=>{ const el=document.getElementById('sv-'+k),sp=document.getElementById('sv-'+k+'-v'); if(el)el.value=v; if(sp)sp.textContent=v; });
   updateSimPreview();
 };
-window.simCritical=function(){
-  [['vib','0.95'],['str','1250'],['tlt','6.8'],['tmp','49'],['load','2900'],['cor','14.5']].forEach(([k,v])=>{
-    const el=document.getElementById('sv-'+k);const sp=document.getElementById('sv-'+k+'-v');
-    if(el)el.value=v;if(sp)sp.textContent=v;
-  });
+window.simCritical = function() {
+  [['vib','0.95'],['str','1250'],['tlt','6.8'],['tmp','49'],['load','2900'],['cor','14.5']].forEach(([k,v])=>{ const el=document.getElementById('sv-'+k),sp=document.getElementById('sv-'+k+'-v'); if(el)el.value=v; if(sp)sp.textContent=v; });
   updateSimPreview();
 };
-function getSimVals(){
-  return{
-    vibration:parseFloat(document.getElementById('sv-vib').value),
-    strain:parseFloat(document.getElementById('sv-str').value),
-    tilt:parseFloat(document.getElementById('sv-tlt').value),
-    temperature:parseFloat(document.getElementById('sv-tmp').value),
-    load:parseFloat(document.getElementById('sv-load').value),
-    corrosion:parseFloat(document.getElementById('sv-cor').value)
-  };
+function getSimVals() {
+  return { vibration:parseFloat(document.getElementById('sv-vib').value), strain:parseFloat(document.getElementById('sv-str').value), tilt:parseFloat(document.getElementById('sv-tlt').value), temperature:parseFloat(document.getElementById('sv-tmp').value), load:parseFloat(document.getElementById('sv-load').value), corrosion:parseFloat(document.getElementById('sv-cor').value) };
 }
-window.updateSimPreview=function(){
-  const v=getSimVals();const sc=computeScore(v);const st=computeStatus(sc);const c=scoreColor(sc);
-  document.getElementById('sim-preview').innerHTML=
-    `Computed Score: <span style="color:${c};font-size:16px">${sc}%</span> &nbsp;<span class="badge ${badgeClass(st)}">${st}</span>`;
+window.updateSimPreview = function() {
+  const v=getSimVals(), sc=computeScore(v), st=computeStatus(sc), c=scoreColor(sc);
+  document.getElementById('sim-preview').innerHTML = `Computed Score: <span style="color:${c};font-size:20px;font-weight:800">${sc}%</span>&nbsp;<span class="badge ${badgeClass(st)}">${st}</span>`;
 };
-window.openSimModal=function(){
-  const sel=document.getElementById('sim-bridge');
-  sel.innerHTML='';
-  Object.values(bridges).forEach(b=>{sel.innerHTML+=`<option value="${b.id}">${b.name||b.id}</option>`;});
-  if(window._simBridgeId)sel.value=window._simBridgeId;
+window.openSimModal = function() {
+  const sel=document.getElementById('sim-bridge'); sel.innerHTML='';
+  Object.values(bridges).forEach(b=>{ sel.innerHTML+=`<option value="${b.id}">${b.name||b.id}</option>`; });
+  if (window._simBridgeId) sel.value=window._simBridgeId;
   updateSimPreview();
   document.getElementById('modal3-overlay').classList.add('open');
 };
-window.openSimForBridge=function(id){window._simBridgeId=id;openSimModal();};
-window.pushSim=async function(){
+window.openSimForBridge = function(id) { window._simBridgeId=id; openSimModal(); };
+window.pushSim = async function() {
   const bid=document.getElementById('sim-bridge').value;
-  if(!bid){toast('Select a bridge','err');return;}
-  const v=getSimVals();const sc=computeScore(v);const st=computeStatus(sc);
-  try{
+  if (!bid) { toast('Select a bridge','err'); return; }
+  const v=getSimVals(), sc=computeScore(v), st=computeStatus(sc);
+  try {
     await addDoc(collection(db,'sensor_data'),{bridgeId:bid,...v,timestamp:Date.now()});
     await setDoc(doc(db,'bridges',bid),{healthScore:sc,status:st,lastUpdated:serverTimestamp()},{merge:true});
-    if(st==='CRITICAL'){
-      await addDoc(collection(db,'alerts'),{
-        bridgeId:bid,type:'SENSOR_CRITICAL',
-        message:`Simulated critical reading – Score: ${sc}%. Vibration:${v.vibration} Strain:${v.strain} Tilt:${v.tilt}°`,
-        severity:'HIGH',timestamp:serverTimestamp(),status:'ACTIVE',resolved:false
-      });
-    }
+    if (st==='CRITICAL') await addDoc(collection(db,'alerts'),{bridgeId:bid,type:'SENSOR_CRITICAL',message:`Simulated critical reading – Score: ${sc}%. Vibration:${v.vibration} Strain:${v.strain} Tilt:${v.tilt}°`,severity:'HIGH',timestamp:serverTimestamp(),status:'ACTIVE',resolved:false});
     document.getElementById('modal3-overlay').classList.remove('open');
-    toast(`Data pushed – Score: ${sc}% (${st})`,st==='CRITICAL'?'err':st==='WARNING'?'warn':'ok');
-  }catch(e){toast('Error: '+e.message,'err');}
+    toast(`Data pushed — Score: ${sc}% (${st})`,st==='CRITICAL'?'err':st==='WARNING'?'warn':'ok');
+  } catch(e) { toast('Error: '+e.message,'err'); }
 };
 
-// ── ANALYTICS ────────────────────────
-function buildAnalytics(){
-  const list=Object.values(bridges);
-  const safe=list.filter(b=>b.status==='SAFE').length;
-  const warn=list.filter(b=>b.status==='WARNING').length;
-  const crit=list.filter(b=>b.status==='CRITICAL').length;
+function buildAnalytics() {
+  const list = Object.values(bridges);
+  const safe=list.filter(b=>b.status==='SAFE').length, warn=list.filter(b=>b.status==='WARNING').length, crit=list.filter(b=>b.status==='CRITICAL').length;
 
-  // Donut
-  if(charts.donut)charts.donut.destroy();
-  charts.donut=new Chart(document.getElementById('ch-donut'),{
+  const chartDefaults = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ labels:{ color:'#7a7268', font:{size:11}, boxWidth:10 } } }
+  };
+
+  if (charts.donut) charts.donut.destroy();
+  charts.donut = new Chart(document.getElementById('ch-donut'),{
     type:'doughnut',
-    data:{labels:['Safe','Warning','Critical'],datasets:[{data:[safe,warn,crit],backgroundColor:['#3dd68c','#f5c842','#ff3f3f'],borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed}`}}}}
+    data:{ labels:['Safe','Warning','Critical'], datasets:[{data:[safe,warn,crit],backgroundColor:['#16a34a','#d97706','#dc2626'],borderWidth:0}] },
+    options:{...chartDefaults,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed}`}}}}
   });
-  document.getElementById('health-breakdown').innerHTML=
-    [['Safe',safe,'#3dd68c'],['Warning',warn,'#f5c842'],['Critical',crit,'#ff3f3f']].map(([l,n,c])=>
-      `<div style="display:flex;align-items:center;gap:10px">
-        <div style="width:10px;height:10px;border-radius:2px;background:${c};flex-shrink:0"></div>
-        <span style="font-size:13px;flex:1">${l}</span>
-        <span style="font-size:22px;font-weight:700;font-family:var(--font-mono);color:${c}">${n}</span>
+
+  document.getElementById('health-breakdown').innerHTML =
+    [['Safe',safe,'#16a34a','#dcfce7','#bbf7d0'],['Warning',warn,'#d97706','#fef3c7','#fde68a'],['Critical',crit,'#dc2626','#fee2e2','#fecaca']].map(([l,n,c,bg,bd])=>
+      `<div style="display:flex;align-items:center;gap:14px;padding:10px 12px;background:${bg};border:1px solid ${bd};border-radius:9px">
+        <div style="width:8px;height:8px;border-radius:2px;background:${c};flex-shrink:0"></div>
+        <span style="font-size:13px;flex:1;font-weight:600;color:var(--text2)">${l}</span>
+        <span style="font-size:26px;font-weight:800;font-family:var(--font-mono);color:${c}">${n}</span>
       </div>`
     ).join('');
 
-  // Alerts severity bar
   const sev={HIGH:0,MEDIUM:0,LOW:0};
-  alertsData.slice(-30).forEach(a=>{const k=a.severity||'LOW';if(sev[k]!==undefined)sev[k]++;});
-  if(charts.alertSev)charts.alertSev.destroy();
-  charts.alertSev=new Chart(document.getElementById('ch-alerts-sev'),{
+  alertsData.slice(-30).forEach(a=>{ const k=a.severity||'LOW'; if(sev[k]!==undefined) sev[k]++; });
+  if (charts.alertSev) charts.alertSev.destroy();
+  charts.alertSev = new Chart(document.getElementById('ch-alerts-sev'),{
     type:'bar',
-    data:{labels:['High','Medium','Low'],datasets:[{data:[sev.HIGH,sev.MEDIUM,sev.LOW],backgroundColor:['#ff3f3f','#f5c842','#3dd68c'],borderRadius:4,borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7a96b8'},grid:{display:false}},y:{ticks:{color:'#7a96b8',stepSize:1},grid:{color:'#1a2d47'}}}}
+    data:{ labels:['High','Medium','Low'], datasets:[{data:[sev.HIGH,sev.MEDIUM,sev.LOW],backgroundColor:['#fee2e2','#fef3c7','#dcfce7'],borderColor:['#dc2626','#d97706','#16a34a'],borderWidth:2,borderRadius:6}] },
+    options:{...chartDefaults,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#b0a89e'},grid:{display:false}},y:{ticks:{color:'#b0a89e',stepSize:1},grid:{color:'rgba(0,0,0,0.04)'}}}}
   });
 
-  // Bridge types pie
   const types={};
-  list.forEach(b=>{const t=b.type||'Unknown';types[t]=(types[t]||0)+1;});
-  if(charts.types)charts.types.destroy();
-  charts.types=new Chart(document.getElementById('ch-types'),{
+  list.forEach(b=>{ const t=b.type||'Unknown'; types[t]=(types[t]||0)+1; });
+  if (charts.types) charts.types.destroy();
+  charts.types = new Chart(document.getElementById('ch-types'),{
     type:'pie',
-    data:{labels:Object.keys(types),datasets:[{data:Object.values(types),backgroundColor:['#3b9eff','#00d4b8','#3dd68c','#f5c842','#ff7a2f','#ff3f3f'],borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#7a96b8',font:{size:10},boxWidth:10}}}}
+    data:{ labels:Object.keys(types), datasets:[{data:Object.values(types),backgroundColor:['#dbeafe','#ccfbf1','#dcfce7','#fef3c7','#ffedd5','#fee2e2'],borderColor:['#93c5fd','#99f6e4','#bbf7d0','#fde68a','#fed7aa','#fecaca'],borderWidth:2}] },
+    options:{...chartDefaults}
   });
 
-  // District avg score
   const dmap={};
-  list.forEach(b=>{const d=b.district||'Unknown';if(!dmap[d])dmap[d]=[];dmap[d].push(b.healthScore||0);});
-  const dlabels=Object.keys(dmap);
-  const davg=dlabels.map(d=>Math.round(dmap[d].reduce((a,v)=>a+v,0)/dmap[d].length));
-  if(charts.district)charts.district.destroy();
-  charts.district=new Chart(document.getElementById('ch-district'),{
+  list.forEach(b=>{ const d=b.district||'Unknown'; if(!dmap[d]) dmap[d]=[]; dmap[d].push(b.healthScore||0); });
+  const dlabels=Object.keys(dmap), davg=dlabels.map(d=>Math.round(dmap[d].reduce((a,v)=>a+v,0)/dmap[d].length));
+  if (charts.district) charts.district.destroy();
+  charts.district = new Chart(document.getElementById('ch-district'),{
     type:'bar',
-    data:{labels:dlabels,datasets:[{label:'Avg Score',data:davg,backgroundColor:davg.map(v=>scoreColor(v)),borderRadius:4,borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{min:0,max:100,ticks:{color:'#7a96b8'},grid:{color:'#1a2d47'}},y:{ticks:{color:'#7a96b8'},grid:{display:false}}}}
+    data:{ labels:dlabels, datasets:[{label:'Avg Score',data:davg,backgroundColor:davg.map(v=>scoreColor(v)+'22'),borderColor:davg.map(v=>scoreColor(v)),borderWidth:2,borderRadius:5}] },
+    options:{...chartDefaults,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{min:0,max:100,ticks:{color:'#b0a89e'},grid:{color:'rgba(0,0,0,0.04)'}},y:{ticks:{color:'#b0a89e'},grid:{display:false}}}}
   });
 
-  // Populate trend dropdown
   const tsel=document.getElementById('trend-bridge-sel');
   const cur=tsel.value;
   tsel.innerHTML='<option value="">Select a bridge…</option>';
-  list.forEach(b=>{tsel.innerHTML+=`<option value="${b.id}" ${b.id===cur?'selected':''}>${b.name||b.id}</option>`;});
-  if(cur)renderTrend();
+  list.forEach(b=>{ tsel.innerHTML+=`<option value="${b.id}" ${b.id===cur?'selected':''}>${b.name||b.id}</option>`; });
+  if (cur) renderTrend();
 }
 
-window.renderTrend=async function(){
+window.renderTrend = async function() {
   const bid=document.getElementById('trend-bridge-sel').value;
   const statusEl=document.getElementById('trend-status');
-  if(!bid){if(charts.trend)charts.trend.destroy();statusEl.textContent='';return;}
+  if (!bid) { if(charts.trend) charts.trend.destroy(); statusEl.textContent=''; return; }
   statusEl.textContent='Loading…';
-  try{
+  try {
     const q=query(collection(db,'sensor_data'),where('bridgeId','==',bid),orderBy('timestamp','desc'),limit(25));
     const snap=await getDocs(q);
     const rows=snap.docs.map(d=>d.data()).reverse();
-    statusEl.textContent=rows.length+' readings loaded';
-    if(!rows.length){statusEl.textContent='No sensor data for this bridge';return;}
+    statusEl.textContent=rows.length+' readings';
+    if (!rows.length) { statusEl.textContent='No sensor data'; return; }
     const labels=rows.map(r=>new Date(r.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
     const scores=rows.map(r=>computeScore(r));
     const colors=scores.map(s=>scoreColor(s));
-    if(charts.trend)charts.trend.destroy();
-    charts.trend=new Chart(document.getElementById('ch-trend'),{
+    if (charts.trend) charts.trend.destroy();
+    charts.trend = new Chart(document.getElementById('ch-trend'),{
       type:'line',
-      data:{labels,datasets:[{label:'Health Score',data:scores,borderColor:'#3b9eff',backgroundColor:'rgba(59,158,255,.1)',fill:true,tension:.35,pointRadius:5,pointBackgroundColor:colors,pointBorderColor:'transparent'}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7a96b8',font:{size:10}},grid:{display:false}},y:{min:0,max:100,ticks:{color:'#7a96b8'},grid:{color:'#1a2d47'}}}}
+      data:{ labels, datasets:[{label:'Health Score',data:scores,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.06)',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:colors,pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5}] },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#b0a89e',font:{size:10}},grid:{display:false}},y:{min:0,max:100,ticks:{color:'#b0a89e'},grid:{color:'rgba(0,0,0,0.05)'}}}}
     });
-  }catch(e){statusEl.textContent='Error: '+e.message;}
+  } catch(e) { statusEl.textContent='Error: '+e.message; }
 };
 
-// ── LIVE SENSORS PAGE ─────────────────
-function renderSensors(){
+function renderSensors() {
   const grid=document.getElementById('sensors-grid');
   const entries=Object.entries(sensorLatest);
-  if(!entries.length){grid.innerHTML='<div class="empty-msg">No sensor data yet</div>';return;}
+  if (!entries.length) { grid.innerHTML='<div class="empty-msg"><span>📡</span><span>No sensor data yet — push simulation to begin</span></div>'; return; }
   grid.innerHTML='';
   entries.forEach(([bid,data])=>{
-    const b=bridges[bid];const sc=computeScore(data);const st=computeStatus(sc);const c=scoreColor(sc);
+    const b=bridges[bid], sc=computeScore(data), st=computeStatus(sc), c=scoreColor(sc);
     const ts=data.timestamp?new Date(data.timestamp).toLocaleTimeString():'–';
     const card=document.createElement('div');
     card.className='sensor-card';
-    card.style.borderColor=st==='CRITICAL'?'#ff3f3f44':st==='WARNING'?'#f5c84233':'var(--border)';
+    card.style.borderColor = st==='CRITICAL'?'#fecaca':st==='WARNING'?'#fde68a':'var(--border)';
     const rows=['vibration','strain','tilt','temperature','load','corrosion'].map(k=>{
-      const v=data[k];if(v===undefined||v===null)return'';
-      const lv=sensorLevel(k,v);const lc=sensorLevelColor(lv);
+      const v=data[k]; if (v===undefined||v===null) return '';
+      const lv=sensorLevel(k,v), lc=sensorLevelColor(lv);
       const pct=Math.min(100,(v/sensorMax(k))*100);
-      return`<div class="sr">
+      return `<div class="sr">
         <div class="sr-name">${k}</div>
         <div class="sr-bar-wrap"><div class="sr-bar" style="width:${pct}%;background:${lc}"></div></div>
         <div class="sr-val" style="color:${lc}">${v.toFixed(2)}</div>
@@ -920,9 +1653,9 @@ function renderSensors(){
         <span class="badge ${badgeClass(st)}">${st}</span>
         <div class="sc-time">${ts}</div>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:22px;font-weight:700;font-family:var(--font-mono);color:${c}">${sc}%</span>
-        <div class="sbar" style="flex:1;height:5px"><div class="sbar-fill" style="width:${sc}%;background:${c};height:5px"></div></div>
+      <div class="sc-score-row">
+        <span class="sc-score-num" style="color:${c}">${sc}%</span>
+        <div class="sbar" style="flex:1;height:6px"><div class="sbar-fill" style="width:${sc}%;background:${c};height:6px"></div></div>
       </div>
       <div>${rows}</div>
     `;
@@ -931,106 +1664,84 @@ function renderSensors(){
   document.getElementById('sensor-upd').textContent='Updated '+new Date().toLocaleTimeString();
 }
 
-// ── GEOFENCE PAGE ─────────────────────
-function renderGeofencePage(){
+function renderGeofencePage() {
   const list=document.getElementById('geo-list');
   const glist=Object.values(geofences);
-  if(!glist.length){list.innerHTML='<div class="empty-msg" style="padding:10px">No active geofences</div>';return;}
+  if (!glist.length) { list.innerHTML='<div class="empty-msg" style="padding:14px">No active geofences</div>'; return; }
   list.innerHTML='';
   glist.forEach(g=>{
-    const item=document.createElement('div');
-    item.className='geo-item';
+    const item=document.createElement('div'); item.className='geo-item';
     item.innerHTML=`
       <div class="geo-item-name">${g.bridgeName||g.bridgeId}</div>
-      <div class="geo-item-info">
-        Lat: ${g.latitude?.toFixed(5)||'–'}<br>
-        Lng: ${g.longitude?.toFixed(5)||'–'}<br>
-        Radius: ${g.radiusMeters||1000}m<br>
-        Created: ${g.createdAt?new Date(g.createdAt.seconds*1000).toLocaleDateString():'–'}
-      </div>
-      <div style="display:flex;gap:5px;align-items:center">
-        <button class="btn-sm btn-sm-ack" onclick="geoMap.setView([${g.latitude},${g.longitude}],14)">&#9675; View</button>
+      <div class="geo-item-info">Lat: ${g.latitude?.toFixed(5)||'–'}<br>Lng: ${g.longitude?.toFixed(5)||'–'}<br>Radius: ${g.radiusMeters||1000}m<br>Created: ${g.createdAt?new Date(g.createdAt.seconds*1000).toLocaleDateString():'–'}</div>
+      <div class="geo-item-actions">
+        <button class="btn-xs btn-xs-ack" onclick="geoMap.setView([${g.latitude},${g.longitude}],14)">◈ View</button>
         <span class="badge b-safe">ACTIVE</span>
-        <span class="badge" style="background:#1a2a0a;color:var(--teal)">${g.radiusMeters||1000}m</span>
+        <span class="badge" style="background:var(--teal-soft);color:var(--teal);border-color:#99f6e4">${g.radiusMeters||1000}m</span>
       </div>
     `;
     list.appendChild(item);
-    // Draw on geo-map
-    if(!geoMapMarkers[g.bridgeId]){
-      const icon=L.divIcon({className:'',html:`<div style="width:10px;height:10px;border-radius:50%;background:var(--blue);box-shadow:0 0 6px #3b9eff"></div>`,iconSize:[10,10],iconAnchor:[5,5]});
-      L.marker([g.latitude,g.longitude],{icon}).addTo(geoMap)
-        .bindPopup(`<div class="lp-name">${g.bridgeName||g.bridgeId}</div><div class="lp-row" style="color:var(--teal)">1km geofence active</div>`);
+    if (!geoMapMarkers[g.bridgeId]) {
+      const icon=L.divIcon({className:'',html:`<div style="width:10px;height:10px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.2)"></div>`,iconSize:[10,10],iconAnchor:[5,5]});
+      L.marker([g.latitude,g.longitude],{icon}).addTo(geoMap).bindPopup(`<div class="lp-name">${g.bridgeName||g.bridgeId}</div><div class="lp-row" style="color:var(--teal);font-weight:700">1km geofence active</div>`);
       geoMapMarkers[g.bridgeId]=true;
     }
-    if(!geoMapCircles[g.bridgeId]){
-      geoMapCircles[g.bridgeId]=L.circle([g.latitude,g.longitude],{
-        radius:1000,color:'#ff7a2f',fillColor:'#ff7a2f',fillOpacity:.07,weight:1.5,dashArray:'6,4'
-      }).addTo(geoMap);
+    if (!geoMapCircles[g.bridgeId]) {
+      geoMapCircles[g.bridgeId]=L.circle([g.latitude,g.longitude],{radius:1000,color:'#ea580c',fillColor:'#ea580c',fillOpacity:0.07,weight:1.5,dashArray:'6,4'}).addTo(geoMap);
     }
   });
 }
 
-// ── PAGE NAVIGATION ───────────────────
-window.showPage=function(name,btn){
+window.showPage = function(name, btn) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   btn.classList.add('active');
-  if(name==='analytics')setTimeout(buildAnalytics,80);
-  if(name==='geofence')setTimeout(()=>geoMap.invalidateSize(),80);
+  if (name==='analytics') setTimeout(buildAnalytics,80);
+  if (name==='geofence') setTimeout(()=>geoMap.invalidateSize(),80);
 };
 
-// ── FIRESTORE LISTENERS ───────────────
-onSnapshot(collection(db,'bridges'),snap=>{
+// ─── FIRESTORE REALTIME ───────────────
+onSnapshot(collection(db,'bridges'), snap=>{
+  bridgesLoaded=true;
   snap.docChanges().forEach(ch=>{
     const d={id:ch.doc.id,...ch.doc.data()};
-    if(ch.type==='removed'){
-      delete bridges[d.id];
-      if(mapMarkers[d.id]){map.removeLayer(mapMarkers[d.id]);delete mapMarkers[d.id];}
-    }else{
-      if(d.healthScore!==undefined)d.status=computeStatus(d.healthScore);
-      bridges[d.id]=d;
-      renderMarker(d);
-      // Restore existing geofence circle if flag set
-      if(d.geofenceActive&&d.latitude&&d.longitude&&!geoCircles[d.id]){
-        geoCircles[d.id]=L.circle([d.latitude,d.longitude],{
-          radius:1000,color:'#ff7a2f',fillColor:'#ff7a2f',fillOpacity:.07,weight:1.5,dashArray:'6,4'
-        }).addTo(map);
-      }
+    if (ch.type==='removed') { delete bridges[d.id]; if(mapMarkers[d.id]){map.removeLayer(mapMarkers[d.id]);delete mapMarkers[d.id];} }
+    else {
+      if (d.healthScore!==undefined) d.status=computeStatus(d.healthScore);
+      bridges[d.id]=d; renderMarker(d);
+      if (d.geofenceActive&&d.latitude&&d.longitude&&!geoCircles[d.id])
+        geoCircles[d.id]=L.circle([d.latitude,d.longitude],{radius:1000,color:'#ea580c',fillColor:'#ea580c',fillOpacity:0.07,weight:1.5,dashArray:'6,4'}).addTo(map);
     }
   });
-  renderSidebar();updateStats();populateAlertBridgeSel();
-  if(selectedId&&bridges[selectedId])renderDetail(selectedId);
+  renderSidebar(); updateStats(); populateAlertBridgeSel();
+  if (selectedId&&bridges[selectedId]) renderDetail(selectedId);
   document.getElementById('sync-time').textContent='Synced '+new Date().toLocaleTimeString();
+}, err=>{
+  console.error('Firestore error:',err);
+  document.getElementById('bridge-list').innerHTML='<div class="empty-msg"><span>⚠</span><span>Connection error — check console</span></div>';
+  document.getElementById('sync-time').textContent='Connection failed';
 });
 
-onSnapshot(query(collection(db,'sensor_data'),orderBy('timestamp','desc'),limit(300)),snap=>{
-  snap.docs.forEach(d=>{
-    const data=d.data();
-    if(!sensorLatest[data.bridgeId]||data.timestamp>sensorLatest[data.bridgeId].timestamp)
-      sensorLatest[data.bridgeId]=data;
-  });
+onSnapshot(query(collection(db,'sensor_data'),orderBy('timestamp','desc'),limit(300)), snap=>{
+  snap.docs.forEach(d=>{ const data=d.data(); if(!sensorLatest[data.bridgeId]||data.timestamp>sensorLatest[data.bridgeId].timestamp) sensorLatest[data.bridgeId]=data; });
   renderSensors();
-  if(selectedId&&bridges[selectedId])renderDetail(selectedId);
+  if (selectedId&&bridges[selectedId]) renderDetail(selectedId);
 });
 
-onSnapshot(collection(db,'alerts'),snap=>{
+onSnapshot(collection(db,'alerts'), snap=>{
   alertsData=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.timestamp?.seconds||0)-(b.timestamp?.seconds||0));
-  updateStats();renderAlerts();
-  if(selectedId&&bridges[selectedId])renderDetail(selectedId);
+  updateStats(); renderAlerts();
+  if (selectedId&&bridges[selectedId]) renderDetail(selectedId);
 });
 
-onSnapshot(collection(db,'geofences'),snap=>{
-  snap.docChanges().forEach(ch=>{
-    const d={id:ch.doc.id,...ch.doc.data()};
-    if(ch.type==='removed')delete geofences[d.bridgeId||d.id];
-    else geofences[d.bridgeId||d.id]=d;
-  });
-  renderGeofencePage();updateStats();
-  if(selectedId&&bridges[selectedId])renderDetail(selectedId);
+onSnapshot(collection(db,'geofences'), snap=>{
+  snap.docChanges().forEach(ch=>{ const d={id:ch.doc.id,...ch.doc.data()}; if(ch.type==='removed') delete geofences[d.bridgeId||d.id]; else geofences[d.bridgeId||d.id]=d; });
+  renderGeofencePage(); updateStats();
+  if (selectedId&&bridges[selectedId]) renderDetail(selectedId);
 });
 
-setTimeout(updateSimPreview,600);
+setTimeout(updateSimPreview, 600);
 </script>
 </body>
 </html>
