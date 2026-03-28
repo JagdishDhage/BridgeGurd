@@ -58,7 +58,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Subtle noise texture overlay */
 body::after {
   content: '';
   position: fixed;
@@ -318,7 +317,6 @@ body::after {
 
 #bridge-list { flex: 1; overflow-y: auto; padding: 8px; }
 
-/* Bridge Card */
 .bcard {
   padding: 10px 12px;
   border-radius: 9px;
@@ -356,7 +354,6 @@ body::after {
 .sbar { height: 3px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
 .sbar-fill { height: 3px; border-radius: 3px; transition: width 0.5s ease; }
 
-/* Badges */
 .badge {
   font-size: 9px;
   padding: 2px 7px;
@@ -484,7 +481,6 @@ body::after {
 .sbox-val { font-size: 15px; font-weight: 800; font-family: var(--font-mono); line-height: 1.2; }
 .sbox-st { font-size: 8px; font-weight: 700; letter-spacing: 0.4px; margin-top: 2px; text-transform: uppercase; }
 
-/* Buttons */
 .btn {
   width: 100%;
   padding: 9px 14px;
@@ -809,7 +805,6 @@ body::after {
 .modal-footer { display: flex; gap: 9px; margin-top: 16px; }
 .modal-footer .btn { flex: 1; margin-bottom: 0; }
 
-/* Simulator */
 .rng-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
 .rng-label { font-size: 10px; color: var(--text3); width: 82px; text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; font-weight: 600; }
 .rng-row input[type=range] { flex: 1; accent-color: var(--blue); cursor: pointer; }
@@ -854,7 +849,6 @@ body::after {
 #toast.warn { background: #fffbeb; border-color: #fde68a; color: var(--yellow); }
 #toast.info { background: #eff6ff; border-color: #bfdbfe; color: var(--blue); }
 
-/* Utilities */
 .empty-msg, .loading-msg {
   text-align: center;
   padding: 36px 16px;
@@ -873,7 +867,6 @@ body::after {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Leaflet */
 .leaflet-popup-content-wrapper {
   background: var(--bg1) !important;
   border: 1px solid var(--border) !important;
@@ -886,10 +879,7 @@ body::after {
 .lp-name { font-weight: 800; font-size: 13px; margin-bottom: 5px; font-family: var(--font); }
 .lp-row { font-size: 11px; font-family: var(--font-mono); margin-top: 3px; font-weight: 500; }
 
-/* Divider line in modals */
 .modal-divider { height: 1px; background: var(--border); margin: 15px 0; }
-
-/* Leaflet tile attribution */
 .leaflet-control-attribution { font-size: 9px !important; opacity: 0.6; }
 </style>
 </head>
@@ -907,7 +897,6 @@ body::after {
     <div class="live-dot"></div>
     System Online
   </div>
-
   <div class="tb-right">
     <span id="sync-time">Connecting…</span>
     <button class="btn-hdr" onclick="openSimModal()">▶ Simulate</button>
@@ -928,45 +917,27 @@ body::after {
 <div id="stat-bar">
   <div class="stat-cell">
     <div class="stat-icon" style="background:var(--blue-soft)">🌉</div>
-    <div>
-      <div class="stat-num c-blue" id="st-total">–</div>
-      <div class="stat-lbl">Total Bridges</div>
-    </div>
+    <div><div class="stat-num c-blue" id="st-total">–</div><div class="stat-lbl">Total Bridges</div></div>
   </div>
   <div class="stat-cell">
     <div class="stat-icon" style="background:var(--green-soft)">✓</div>
-    <div>
-      <div class="stat-num c-green" id="st-safe">–</div>
-      <div class="stat-lbl">Safe</div>
-    </div>
+    <div><div class="stat-num c-green" id="st-safe">–</div><div class="stat-lbl">Safe</div></div>
   </div>
   <div class="stat-cell">
     <div class="stat-icon" style="background:var(--yellow-soft)">⚡</div>
-    <div>
-      <div class="stat-num c-yellow" id="st-warn">–</div>
-      <div class="stat-lbl">Warning</div>
-    </div>
+    <div><div class="stat-num c-yellow" id="st-warn">–</div><div class="stat-lbl">Warning</div></div>
   </div>
   <div class="stat-cell">
     <div class="stat-icon" style="background:var(--red-soft)">⚠</div>
-    <div>
-      <div class="stat-num c-red" id="st-crit">–</div>
-      <div class="stat-lbl">Critical</div>
-    </div>
+    <div><div class="stat-num c-red" id="st-crit">–</div><div class="stat-lbl">Critical</div></div>
   </div>
   <div class="stat-cell">
     <div class="stat-icon" style="background:var(--orange-soft)">🔔</div>
-    <div>
-      <div class="stat-num c-orange" id="st-alerts">–</div>
-      <div class="stat-lbl">Active Alerts</div>
-    </div>
+    <div><div class="stat-num c-orange" id="st-alerts">–</div><div class="stat-lbl">Active Alerts</div></div>
   </div>
   <div class="stat-cell">
     <div class="stat-icon" style="background:var(--teal-soft)">◈</div>
-    <div>
-      <div class="stat-num c-teal" id="st-geo">–</div>
-      <div class="stat-lbl">Geofences</div>
-    </div>
+    <div><div class="stat-num c-teal" id="st-geo">–</div><div class="stat-lbl">Geofences</div></div>
   </div>
 </div>
 
@@ -1173,7 +1144,9 @@ const app = initializeApp(FC);
 const db = getFirestore(app);
 
 let bridges = {}, alertsData = [], sensorLatest = {}, geofences = {};
-let mapMarkers = {}, geoCircles = {}, geoMapMarkers = {}, geoMapCircles = {};
+let mapMarkers = {}, geoCircles = {};
+// Geo map tracking — keyed by Firestore DOCUMENT ID (not bridgeId field)
+let geoMapMarkers = {}, geoMapCircles = {};
 let selectedId = null, alertFilter = 'ALL', charts = {};
 let bridgesLoaded = false;
 
@@ -1186,6 +1159,10 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { 
 window.geoMap = geoMap;
 
 // ─── HELPERS ──────────────────────────
+
+// FIX: Always parse lat/lng as numbers — Firestore sometimes stores them as strings
+function toNum(v) { return typeof v === 'string' ? parseFloat(v) : v; }
+
 function computeStatus(s) { return s >= 90 ? 'SAFE' : s >= 50 ? 'WARNING' : 'CRITICAL'; }
 function statusColor(s)   { return s === 'SAFE' ? '#16a34a' : s === 'WARNING' ? '#d97706' : '#dc2626'; }
 function scoreColor(s)    { return s >= 90 ? '#16a34a' : s >= 50 ? '#d97706' : '#dc2626'; }
@@ -1282,14 +1259,24 @@ function makeIcon(status) {
 
 function renderMarker(b) {
   const sc = b.healthScore||0, st = b.status||computeStatus(sc);
-  if (mapMarkers[b.id]) { mapMarkers[b.id].setIcon(makeIcon(st)); return; }
-  if (!b.latitude||!b.longitude) return;
-  const m = L.marker([b.latitude,b.longitude],{icon:makeIcon(st)}).addTo(map)
+  const lat = toNum(b.latitude), lng = toNum(b.longitude);
+  if (!lat || !lng || isNaN(lat) || isNaN(lng)) return;
+  if (mapMarkers[b.id]) {
+    mapMarkers[b.id].setIcon(makeIcon(st));
+    mapMarkers[b.id].setPopupContent(`
+      <div class="lp-name">${b.name||b.id}</div>
+      <div class="lp-row" style="color:${statusColor(st)};font-weight:700">${st} — ${sc}% health</div>
+      <div class="lp-row" style="color:var(--text4)">${b.district||''} · ${b.type||''}</div>
+      <div class="lp-row" style="color:var(--text4)">${lat.toFixed(4)}, ${lng.toFixed(4)}</div>
+    `);
+    return;
+  }
+  const m = L.marker([lat, lng],{icon:makeIcon(st)}).addTo(map)
     .bindPopup(`
       <div class="lp-name">${b.name||b.id}</div>
       <div class="lp-row" style="color:${statusColor(st)};font-weight:700">${st} — ${sc}% health</div>
       <div class="lp-row" style="color:var(--text4)">${b.district||''} · ${b.type||''}</div>
-      <div class="lp-row" style="color:var(--text4)">${b.latitude.toFixed(4)}, ${b.longitude.toFixed(4)}</div>
+      <div class="lp-row" style="color:var(--text4)">${lat.toFixed(4)}, ${lng.toFixed(4)}</div>
     `,{maxWidth:220});
   m.on('click',()=>selectBridge(b.id));
   mapMarkers[b.id] = m;
@@ -1299,7 +1286,8 @@ function selectBridge(id) {
   selectedId = id;
   document.querySelectorAll('.bcard').forEach(c=>c.classList.toggle('sel',c.dataset.id===id));
   const b = bridges[id]; if (!b) return;
-  if (b.latitude&&b.longitude&&mapMarkers[id]) { map.setView([b.latitude,b.longitude],13); mapMarkers[id].openPopup(); }
+  const lat = toNum(b.latitude), lng = toNum(b.longitude);
+  if (lat && lng && mapMarkers[id]) { map.setView([lat,lng],13); mapMarkers[id].openPopup(); }
   renderDetail(id);
 }
 
@@ -1317,7 +1305,9 @@ function renderDetail(id) {
   const sc = b.healthScore||0, st = b.status||computeStatus(sc);
   const color = scoreColor(sc);
   const s = sensorLatest[id]||{};
-  const hasGeo = !!geofences[id];
+  // Check geofence by bridgeId field match
+  const hasGeo = Object.values(geofences).some(g => (g.bridgeId === id || g.id === id));
+  const geoEntry = Object.values(geofences).find(g => g.bridgeId === id || g.id === id);
   const activeAlerts = alertsData.filter(a=>a.bridgeId===id&&!a.resolved).length;
   document.getElementById('det-empty').style.display = 'none';
   const dc = document.getElementById('det-body'); dc.style.display = 'block';
@@ -1332,6 +1322,8 @@ function renderDetail(id) {
       <div class="sbox-st" style="color:${val!==null?c:'var(--text4)'}">${val!==null?lv.toUpperCase():'NO DATA'}</div>
     </div>`;
   }).join('');
+
+  const lat = toNum(b.latitude), lng = toNum(b.longitude);
 
   dc.innerHTML = `
     <div class="det-name">${b.name||b.id}</div>
@@ -1352,17 +1344,17 @@ function renderDetail(id) {
       <div class="info-row"><span class="info-key">Type</span><span class="info-val">${b.type||'–'}</span></div>
       <div class="info-row"><span class="info-key">Length</span><span class="info-val">${b.length?b.length+'m':'–'}</span></div>
       <div class="info-row"><span class="info-key">Age</span><span class="info-val">${b.age?b.age+' yrs':'–'}</span></div>
-      <div class="info-row"><span class="info-key">Coords</span><span class="info-val">${b.latitude?b.latitude.toFixed(4)+', '+b.longitude.toFixed(4):'–'}</span></div>
+      <div class="info-row"><span class="info-key">Coords</span><span class="info-val">${lat?lat.toFixed(4)+', '+lng.toFixed(4):'–'}</span></div>
       <div class="info-row"><span class="info-key">Updated</span><span class="info-val">${timeAgo(b.lastUpdated)}</span></div>
     </div>
     <div class="sec-header">Sensor Readings</div>
     <div class="sgrid">${sRows}</div>
     <div class="sec-header">Actions</div>
-    ${b.latitude&&b.longitude?`
+    ${lat&&lng?`
       <button class="btn ${hasGeo?'btn-warning':'btn-danger'}" id="btn-geo-d" onclick="createGeoAlert('${id}')">
         ${hasGeo?'◈ Update Geofence':'⚠ Create Alert + Geofence'}
       </button>
-      ${hasGeo?`<div class="geo-active-note">✓ 1km geofence active · ${geofences[id].createdAt?new Date(geofences[id].createdAt.seconds*1000).toLocaleDateString():'saved'}</div>`:''}
+      ${hasGeo&&geoEntry?`<div class="geo-active-note">✓ 1km geofence active · ${geoEntry.createdAt?new Date(geoEntry.createdAt.seconds*1000).toLocaleDateString():'saved'}</div>`:''}
     `:`<div style="font-size:11px;color:var(--text4);padding:4px 0">No coordinates set.</div>`}
     <button class="btn btn-primary" onclick="openSimForBridge('${id}')">▶ Simulate Sensors</button>
     <button class="btn btn-ghost" onclick="openManualAlert('${id}')">⚠ Manual Alert</button>
@@ -1371,25 +1363,34 @@ function renderDetail(id) {
 }
 
 window.createGeoAlert = async function(bid) {
-  const b = bridges[bid]; if (!b||!b.latitude||!b.longitude) return;
+  const b = bridges[bid]; if (!b) return;
+  const lat = toNum(b.latitude), lng = toNum(b.longitude);
+  if (!lat || !lng || isNaN(lat) || isNaN(lng)) { toast('No valid coordinates','err'); return; }
   const btn = document.getElementById('btn-geo-d');
   if (btn) { btn.disabled=true; btn.textContent='Saving…'; }
   try {
+    // Use bridgeId as document ID so it's always findable
     await setDoc(doc(db,'geofences',bid),{
-      bridgeId:bid, latitude:b.latitude, longitude:b.longitude,
-      radiusMeters:1000, active:true, createdAt:serverTimestamp(),
-      bridgeName:b.name||bid, status:b.status||'CRITICAL'
+      bridgeId: bid,
+      latitude: lat,   // store as number
+      longitude: lng,  // store as number
+      radiusMeters: 1000,
+      active: true,
+      createdAt: serverTimestamp(),
+      bridgeName: b.name||bid,
+      status: b.status||'CRITICAL'
     });
     await addDoc(collection(db,'alerts'),{
       bridgeId:bid, type:'GEOFENCE_CREATED',
-      message:`1km geofence created for ${b.name||bid}. Lat: ${b.latitude.toFixed(5)}, Lng: ${b.longitude.toFixed(5)}`,
+      message:`1km geofence created for ${b.name||bid}. Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`,
       severity:b.status==='CRITICAL'?'HIGH':'MEDIUM',
       timestamp:serverTimestamp(), status:'ACTIVE', resolved:false,
-      latitude:b.latitude, longitude:b.longitude
+      latitude:lat, longitude:lng
     });
-    await setDoc(doc(db,'bridges',bid),{geofenceActive:true,geofenceLat:b.latitude,geofenceLng:b.longitude},{merge:true});
+    await setDoc(doc(db,'bridges',bid),{geofenceActive:true,geofenceLat:lat,geofenceLng:lng},{merge:true});
+    // Update dashboard map circle
     if (geoCircles[bid]) map.removeLayer(geoCircles[bid]);
-    geoCircles[bid] = L.circle([b.latitude,b.longitude],{
+    geoCircles[bid] = L.circle([lat,lng],{
       radius:1000,color:'#ea580c',fillColor:'#ea580c',fillOpacity:0.07,weight:1.5,dashArray:'6,4'
     }).addTo(map);
     toast('Geofence saved for '+(b.name||bid),'ok');
@@ -1434,7 +1435,7 @@ window.renderAlerts = function() {
         <div class="alert-meta">
           <span>⬛ ${b?b.name||a.bridgeId:a.bridgeId||'–'}</span>
           <span>⏱ ${ts}</span>
-          ${a.latitude?`<span>◈ ${a.latitude.toFixed(4)}, ${a.longitude?.toFixed(4)||'–'}</span>`:''}
+          ${a.latitude?`<span>◈ ${(+a.latitude).toFixed(4)}, ${(+a.longitude||0).toFixed(4)}</span>`:''}
         </div>
       </div>
       ${!a.resolved?`<div class="alert-actions">
@@ -1664,31 +1665,73 @@ function renderSensors() {
   document.getElementById('sensor-upd').textContent='Updated '+new Date().toLocaleTimeString();
 }
 
+// ─── FIX: Fully redraw geo map on every snapshot ──────────────────────────────
+function rebuildGeoMap() {
+  // Clear all existing geo map layers
+  Object.values(geoMapMarkers).forEach(m => { try { geoMap.removeLayer(m); } catch(e){} });
+  Object.values(geoMapCircles).forEach(c => { try { geoMap.removeLayer(c); } catch(e){} });
+  // Also clear dashboard circles and rebuild them
+  Object.values(geoCircles).forEach(c => { try { map.removeLayer(c); } catch(e){} });
+
+  // Reset tracking objects
+  for (const k in geoMapMarkers) delete geoMapMarkers[k];
+  for (const k in geoMapCircles) delete geoMapCircles[k];
+  for (const k in geoCircles) delete geoCircles[k];
+
+  const glist = Object.values(geofences);
+
+  // Re-add all geofences to both maps
+  glist.forEach(g => {
+    const lat = toNum(g.latitude), lng = toNum(g.longitude);
+    if (!lat || !lng || isNaN(lat) || isNaN(lng)) return;
+    const radius = g.radiusMeters || 1000;
+    const docKey = g._docId || g.bridgeId || g.id;
+
+    // Dashboard map circle
+    geoCircles[docKey] = L.circle([lat, lng], {
+      radius, color:'#ea580c', fillColor:'#ea580c', fillOpacity:0.07, weight:1.5, dashArray:'6,4'
+    }).addTo(map);
+
+    // Geo page map marker
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="width:12px;height:12px;border-radius:50%;background:#2563eb;border:2px solid #fff;box-shadow:0 0 0 3px rgba(37,99,235,0.25)"></div>`,
+      iconSize:[12,12], iconAnchor:[6,6]
+    });
+    const marker = L.marker([lat, lng], {icon}).addTo(geoMap)
+      .bindPopup(`
+        <div class="lp-name">${g.bridgeName||g.bridgeId||g.id}</div>
+        <div class="lp-row" style="color:var(--teal);font-weight:700">◈ ${radius}m geofence active</div>
+        <div class="lp-row" style="color:var(--text4)">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
+        <div class="lp-row" style="color:var(--text4)">${g.createdAt?new Date(g.createdAt.seconds*1000).toLocaleDateString():'–'}</div>
+      `);
+    geoMapMarkers[docKey] = marker;
+
+    // Geo page map circle
+    geoMapCircles[docKey] = L.circle([lat, lng], {
+      radius, color:'#ea580c', fillColor:'#ea580c', fillOpacity:0.08, weight:1.5, dashArray:'6,4'
+    }).addTo(geoMap);
+  });
+}
+
 function renderGeofencePage() {
-  const list=document.getElementById('geo-list');
-  const glist=Object.values(geofences);
+  const list = document.getElementById('geo-list');
+  const glist = Object.values(geofences);
   if (!glist.length) { list.innerHTML='<div class="empty-msg" style="padding:14px">No active geofences</div>'; return; }
   list.innerHTML='';
-  glist.forEach(g=>{
-    const item=document.createElement('div'); item.className='geo-item';
+  glist.forEach(g => {
+    const lat = toNum(g.latitude), lng = toNum(g.longitude);
+    const item = document.createElement('div'); item.className='geo-item';
     item.innerHTML=`
-      <div class="geo-item-name">${g.bridgeName||g.bridgeId}</div>
-      <div class="geo-item-info">Lat: ${g.latitude?.toFixed(5)||'–'}<br>Lng: ${g.longitude?.toFixed(5)||'–'}<br>Radius: ${g.radiusMeters||1000}m<br>Created: ${g.createdAt?new Date(g.createdAt.seconds*1000).toLocaleDateString():'–'}</div>
+      <div class="geo-item-name">${g.bridgeName||g.bridgeId||g.id}</div>
+      <div class="geo-item-info">Lat: ${lat?lat.toFixed(5):'–'}<br>Lng: ${lng?lng.toFixed(5):'–'}<br>Radius: ${g.radiusMeters||1000}m<br>Created: ${g.createdAt?new Date(g.createdAt.seconds*1000).toLocaleDateString():'–'}</div>
       <div class="geo-item-actions">
-        <button class="btn-xs btn-xs-ack" onclick="geoMap.setView([${g.latitude},${g.longitude}],14)">◈ View</button>
+        ${lat&&lng?`<button class="btn-xs btn-xs-ack" onclick="geoMap.setView([${lat},${lng}],14)">◈ View</button>`:''}
         <span class="badge b-safe">ACTIVE</span>
         <span class="badge" style="background:var(--teal-soft);color:var(--teal);border-color:#99f6e4">${g.radiusMeters||1000}m</span>
       </div>
     `;
     list.appendChild(item);
-    if (!geoMapMarkers[g.bridgeId]) {
-      const icon=L.divIcon({className:'',html:`<div style="width:10px;height:10px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.2)"></div>`,iconSize:[10,10],iconAnchor:[5,5]});
-      L.marker([g.latitude,g.longitude],{icon}).addTo(geoMap).bindPopup(`<div class="lp-name">${g.bridgeName||g.bridgeId}</div><div class="lp-row" style="color:var(--teal);font-weight:700">1km geofence active</div>`);
-      geoMapMarkers[g.bridgeId]=true;
-    }
-    if (!geoMapCircles[g.bridgeId]) {
-      geoMapCircles[g.bridgeId]=L.circle([g.latitude,g.longitude],{radius:1000,color:'#ea580c',fillColor:'#ea580c',fillOpacity:0.07,weight:1.5,dashArray:'6,4'}).addTo(geoMap);
-    }
   });
 }
 
@@ -1698,20 +1741,22 @@ window.showPage = function(name, btn) {
   document.getElementById('page-'+name).classList.add('active');
   btn.classList.add('active');
   if (name==='analytics') setTimeout(buildAnalytics,80);
-  if (name==='geofence') setTimeout(()=>geoMap.invalidateSize(),80);
+  if (name==='geofence') setTimeout(()=>{ geoMap.invalidateSize(); }, 80);
 };
 
 // ─── FIRESTORE REALTIME ───────────────
+
 onSnapshot(collection(db,'bridges'), snap=>{
   bridgesLoaded=true;
   snap.docChanges().forEach(ch=>{
     const d={id:ch.doc.id,...ch.doc.data()};
-    if (ch.type==='removed') { delete bridges[d.id]; if(mapMarkers[d.id]){map.removeLayer(mapMarkers[d.id]);delete mapMarkers[d.id];} }
-    else {
+    if (ch.type==='removed') {
+      delete bridges[d.id];
+      if(mapMarkers[d.id]){ map.removeLayer(mapMarkers[d.id]); delete mapMarkers[d.id]; }
+    } else {
       if (d.healthScore!==undefined) d.status=computeStatus(d.healthScore);
-      bridges[d.id]=d; renderMarker(d);
-      if (d.geofenceActive&&d.latitude&&d.longitude&&!geoCircles[d.id])
-        geoCircles[d.id]=L.circle([d.latitude,d.longitude],{radius:1000,color:'#ea580c',fillColor:'#ea580c',fillOpacity:0.07,weight:1.5,dashArray:'6,4'}).addTo(map);
+      bridges[d.id]=d;
+      renderMarker(d);
     }
   });
   renderSidebar(); updateStats(); populateAlertBridgeSel();
@@ -1735,9 +1780,21 @@ onSnapshot(collection(db,'alerts'), snap=>{
   if (selectedId&&bridges[selectedId]) renderDetail(selectedId);
 });
 
+// ─── FIX: Geofences snapshot — use doc ID as key, store _docId for lookup ────
 onSnapshot(collection(db,'geofences'), snap=>{
-  snap.docChanges().forEach(ch=>{ const d={id:ch.doc.id,...ch.doc.data()}; if(ch.type==='removed') delete geofences[d.bridgeId||d.id]; else geofences[d.bridgeId||d.id]=d; });
-  renderGeofencePage(); updateStats();
+  // Rebuild entire geofences map from scratch each time
+  for (const k in geofences) delete geofences[k];
+
+  snap.docs.forEach(d => {
+    const data = { _docId: d.id, id: d.id, ...d.data() };
+    // Key by document ID to ensure all docs are stored
+    geofences[d.id] = data;
+  });
+
+  // Always fully rebuild geo map layers from the fresh geofences list
+  rebuildGeoMap();
+  renderGeofencePage();
+  updateStats();
   if (selectedId&&bridges[selectedId]) renderDetail(selectedId);
 });
 
