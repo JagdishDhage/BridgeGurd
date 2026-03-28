@@ -1,0 +1,29 @@
+name: bridge
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ✅ Your packages (correct place)
+  firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.4
+  geolocator: ^13.0.1
+  flutter_local_notifications: ^17.2.3
+  permission_handler: ^11.3.1
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
